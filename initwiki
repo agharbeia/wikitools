@@ -1,0 +1,104 @@
+#!/bin/bash
+
+WIKI_HANDLE=$1
+WIKI_NAME=$2
+WIKI_USER=$3
+WIKI_PASS=$4
+
+#   Configuration variables are used in this script,
+#+ and in the configuration files' templates.
+#
+# Wiki information:
+FAMILY_DOMAIN=wikido.xyz
+FAMILY_NAME=$FAMILY_DOMAIN		#<== Could be different. Used for creating directories
+FAMILY_ROOT=/srv/www/$FAMILY_NAME
+# Directories:
+MW_SOURCE=/srv/src/mediawiki-1.31.5
+EXTENSIONS_SOURCE=/srv/src/mwextensions-1.31
+TEMPLATES_SOURCE=/srv/src/wikitools
+SECRETS_DIR=/srv/websecrets
+# Templates:
+DB_TEMPLATE=$TEMPLATES_SOURCE/wikido.xyz.mw-1.31.sql
+
+###=========
+if ! [ $(id -u) = 0 ]; then
+   echo "The script need to be run as root." >&2
+   exit 1
+else
+    real_user=$SUDO_USER
+fi
+if [[ -z $1 || -z $2 || -z $3 || -z $4 ]]; then
+	cat <<- USAGE >&2
+		WikiFamily configuration generator, and database creator.
+		usage:
+		  $(basename $0) <wiki_handle> <wiki_name> <wiki_user> <wiki_pass>
+		where:
+		    <wiki_handle>: A string to be used as the the hostname for the wiki website, as well as the base of both the database name and database username.
+		    <wiki_name>: The natural language wikiname.
+		    <wiki_user>: Username of the first user to be created; and granted both "sysop" and "bureaucrat" status.
+		    <wiki_pass>: Password for aforementioned user.
+		More configuration variables exist in the code to customise the process.
+		This scritp needs to be run as root.
+USAGE
+	exit 85
+fi
+
+echo -e "Configuring for:\nWIKI_HANDLE: $WIKI_HANDLE\nWIKI_NAME: $WIKI_NAME" >&2
+
+#
+# Derivatives. Better not to change, for the sake of consistency:
+WIKI_ROOT=$FAMILY_ROOT/$WIKI_HANDLE
+WIKI_FQDN=$WIKI_HANDLE.$FAMILY_DOMAIN
+REPOSITORY_DIR=/srv/repositorea/$FAMILY_NAME/$WIKI_HANDLE
+CACHE_DIR=/var/cache/$FAMILY_NAME/$WIKI_HANDLE
+
+# Create directories and most needed symbolic links, acting as the apache user
+sudo -u www-data mkdir --parents $WIKI_ROOT
+sudo -u www-data ln --symbolic $MW_SOURCE $WIKI_ROOT/mw
+sudo -u www-data ln --symbolic $EXTENSIONS_SOURCE $WIKI_ROOT/mwex
+sudo -u www-data cp --recursive $MW_SOURCE/images $REPOSITORY_DIR
+sudo -u www-data cp --recursive $MW_SOURCE/cache $CACHE_DIR
+mkdir --parents $SECRETS_DIR && chgrp www-data $SECRETS_DIR
+
+conf_from_template() {
+# Generates configuration files based on templates.
+  file=$1
+  shift
+  eval "`printf 'local %s\n' $@`
+cat <<EOF
+`sudo -u www-data cat $file`
+EOF"
+}
+
+# Generate LocalSettings.php for the wiki.
+# This wiki-specific file is invoked from a dispatcher at the wikifamily-level
+conf_from_template $TEMPLATES_SOURCE/LocalSettings.template > $WIKI_ROOT/LocalSettings.php
+
+
+#Generate websecrets files
+conf_from_template $TEMPLATES_SOURCE/websecrets.template > $SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME
+chmod u=r,g=r,o=- $SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME
+
+
+#Generate Apache configuration
+conf_from_template $TEMPLATES_SOURCE/apache.$FAMILY_NAME.conf.template > /etc/apache2/sites-available/$WIKI_FQDN.conf
+sudo -u $real_user ln --symbolic --relative --target-directory=/etc/apache2/sites-enabled/ /etc/apache2/sites-available/$WIKI_FQDN.conf
+
+sudo -u www-data cp $TEMPLATES_SOURCE/robots.txt.template $WIKI_ROOT/robots.txt
+
+
+#Create database
+DB_NAME=${WIKI_HANDLE}_wiki
+DB_USER=wiki_${WIKI_HANDLE}
+DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d) #This is entropy extensive, so better not run it unless it's feasible
+
+echo "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';" | mysql --user=root --password && echo -e "Successfuly created database $DB_NAME; user $DB_USER, and granted permissions.\nDatabase user's password is $DB_PASSWORD." >&2
+
+mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_TEMPLATE && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
+
+
+#create 1st wiki user
+php umranica/mw/maintenance/createAndPromote.php --bureaucrat --sysop --wiki $DB_NAME $WIKI_USER $WIKI_PASS
+
+#restart apache if configuration is OK
+apache2ctl configtest && apache2ctl restart

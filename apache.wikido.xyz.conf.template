@@ -1,0 +1,49 @@
+<VirtualHost *:443>
+	ServerName $WIKI_FQDN
+	ServerAlias www.$WIKI_FQDN
+	UseCanonicalName On
+	ServerAdmin postmaster@$FAMILY_DOMAIN
+
+	DocumentRoot "$WIKI_ROOT"
+	DirectoryIndex /mw/index.php
+	ErrorDocument 404 /mw/thumb_handler.php
+
+	ErrorLog \${APACHE_LOG_DIR}/${WIKI_FQDN}_error.log
+	LogLevel warn
+	CustomLog \${APACHE_LOG_DIR}/${WIKI_FQDN}_access.log combined
+
+	SSLEngine on
+	SSLCertificateKeyFile /etc/letsencrypt/live/$FAMILY_NAME/privkey.pem
+	SSLCertificateFile /etc/letsencrypt/live/$FAMILY_NAME/cert.pem
+	SSLCertificateChainFile /etc/letsencrypt/live/$FAMILY_NAME/chain.pem
+
+	RedirectMatch permanent ^/\.well-known/change-password$ /Special:PasswordReset
+	Alias /repo $REPOSITORY_DIR
+	RedirectMatch temp "^/favicon.ico$" https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/64px-MediaWiki-notext.svg.png
+
+	EnableSendfile On
+
+	## Secure files' repository
+	<Directory "/srv/repositorea">
+		Allow from all
+		Require all granted
+		AllowOverride None
+		AddType text/plain .html .htm .shtml .php .phtml .php5
+		php_admin_flag engine off
+		FileETag MTime Size
+	</Directory>
+
+	<Directory $WIKI_ROOT>
+		SSLRequireSSL
+		Allow from all
+		Require all granted
+		AllowOverride All
+		Options ExecCGI FollowSymLinks
+
+		FallBackResource /mw/index.php
+	</Directory>
+
+	php_value upload_max_filesize 128M
+	php_value post_max_size 132M
+	php_value memory_limit 128M
+</VirtualHost>

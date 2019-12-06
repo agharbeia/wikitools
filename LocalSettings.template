@@ -1,0 +1,168 @@
+<?php
+if ( !defined( 'MEDIAWIKI' ) ) {
+	exit;
+} # Protect against web entry
+
+\$wgSitename = "$WIKI_NAME";
+\$wgMetaNamespace = "ويكي";
+
+
+#== Server ==
+\$wgServer = "https://$WIKI_HANDLE.wikido.xyz";
+\$wgEmergencyContact = "webmaster@wikido.xyz";
+\$wgPasswordSender = "robot@$WIKI_HANDLE.wikido.xyz";
+\$wgScriptPath = "/mw";
+\$wgResourceBasePath = \$wgScriptPath;
+\$aghWikiRoot = realpath(__DIR__);
+\$wgExtensionDirectory  = "\$aghWikiRoot/mwex";
+\$wgExtensionAssetsPath = "/mwex";
+
+\$wgLogo = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/135px-MediaWiki-notext.svg.png";
+\$wgEnableEmail = true;
+
+#=== Locale and languages ===
+\$wgShellLocale = "en_GB.UTF-8";
+
+# Site language code, should be one of the list in ./languages/Names.php
+\$wgLanguageCode = "ar";
+\$wgTranslateNumerals = false;
+\$wgPageLanguageUseDB = true;
+	\$wgGroupPermissions['autoconfirmed']['pagelang'] = true;
+
+#=== Secrets ===
+## The followiong file contain secret information necessary
+## to the operation of this wiki, which is kept out of the webroot.
+require_once( "$SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME" );
+
+#=== Database ===
+\$wgDBtype = "mysql";
+\$wgDBserver = "localhost";
+\$wgDBname = "$DB_NAME";
+\$wgDBuser = "$DB_USER";
+/*$wgDBpassword       = //defined in the secrets file included from this file */
+\$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary DATA DIRECTORY=\"/srv/DB/wikido.xyz\"";
+
+#=== Action Paths ===
+\$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
+foreach ( \$actions as \$action ) {
+  \$wgActionPaths[\$action] = "/\$1/\$action";
+}
+\$wgActionPaths['view'] = "/\$1";
+\$wgArticlePath = \$wgActionPaths['view'];
+\$wgUsePathInfo = true;
+
+
+#== File uploads ==
+\$wgEnableUploads  = true;
+\$wgUploadDirectory = "/srv/repositorea/wikido.xyz/$WIKI_HANDLE";
+\$wgUploadPath	= "/repo";
+\$wgUseImageMagick = true;
+\$wgImageMagickConvertCommand = "/usr/bin/convert";
+//\$wgAllowImageTag = true;
+\$wgAllowUserJs = true;
+\$wgAllowUserCss = true;
+\$wgAllowCopyUploads = true;
+	\$wgGroupPermissions['autoconfirmed']['upload_by_url'] = true;
+\$wgCopyUploadsFromSpecialUpload = true;
+\$wgUseInstantCommons = true;
+\$wgAllowTitlesInSVG = true;
+\$wgTiffThumbnailType = [ 'jpg', 'image/jpeg' ];
+
+\$wgFileExtensions = [
+#graphics:
+'png', 'gif', 'jpg', 'jpeg', 'svg',  'tiff', 'tif', 'xcf', 'ora',
+#text:
+'txt', 'csv', 'srt', 'ass',
+#documets:
+'pdf', 'epub', 'ps', 'psd', 'odt', 'odc', 'ods', 'odp', 'odg',
+#multimedia:
+'mp3', 'ogg', 'oga', 'flac', 'opus', 'spx', 'mkv', 'mka',
+#archives:
+'zip', 'tar', 'xz', 'bz2', 'gz', 'cbz', 'maff',
+];
+
+
+#== Credits and licensing ==
+\$wgRightsPage = "ويكي:عن";
+\$wgRightsUrl = "https://creativecommons.org/licenses/by-sa/4.0/";
+\$wgRightsText = "Creative Commons Attribution-ShareAlike";
+\$wgRightsIcon = "\$wgResourceBasePath/resources/assets/licenses/cc-by-sa.png";
+
+#== Appearance ==
+\$wgDefaultSkin	= "Vector";
+wfLoadSkin( 'Timeless' );
+//wfLoadSkin( 'Modern' );
+wfLoadSkin( 'MonoBook' );
+wfLoadSkin( 'Vector' );
+
+#== Accessibility and exposure ==
+# This is a public-readonly wiki
+# editing is by invitation and requires a confirmed email address
+\$wgGroupPermissions['*']['createaccount'] = false;
+\$wgGroupPermissions['*']['edit'] = false;
+
+#=== other permissions ===
+\$wgGroupPermissions['autoconfirmed']['delete'] = true;
+\$wgGroupPermissions['autoconfirmed']['undelete'] = true;
+\$wgGroupPermissions['autoconfirmed']['browsearchive'] = true;
+\$wgGroupPermissions['autoconfirmed']['proxyunbannable'] = true;
+\$wgGroupPermissions['staff']['deletedtext'] = true;	
+\$wgGroupPermissions['staff']['protect'] = true;
+\$wgGroupPermissions['staff']['editprotected'] = true;
+\$wgGroupPermissions['staff']['patrol'] = true;
+\$wgGroupPermissions['staff']['autopatrol'] = true;
+
+\$wgUseRCPatrol = false;
+
+#=== other settings and default user options
+\$wgEmailConfirmToEdit = true;	//conflict with Extension:InviteSignup
+\$wgEmailAuthentication = true;
+# UPO means: this is also a user preference option
+\$wgEnableUserEmail	= true; # UPO
+\$wgEnotifUserTalk	= true; # UPO
+\$wgEnotifWatchlist	= true; # UPO
+\$wgDefaultUserOptions['timecorrection'] = "Africa/Cairo";
+\$wgDefaultUserOptions['previewonfirst'] = true;
+\$wgDefaultUserOptions['forceeditsummary'] = true;
+
+
+#== Web policies ==
+\$wgNoFollowLinks = false;
+\$wgReferrerPolicy="origin-when-crossorigin";
+
+#== Shared memory ==
+\$wgMainCacheType    = CACHE_ACCEL;
+\$wgMemCachedServers = [];
+\$wgCacheDirectory = "/var/cache/wikido.xyz/$WIKI_HANDLE";
+
+##== Miscellaneous ==
+\$wgEnableScaryTranscluding = true;
+\$wgUseInstantCommons  = true;
+\$wgUseETag		= true;
+\$wgPingback = true;
+\$wgDiff3 = "/usr/bin/diff3";
+\$wgFixDoubleRedirects = true;
+\$wgMaxCredits = 8;
+//\$wgLocalInterwikis = ['كفتة'];
+
+
+#=== Debugging ===
+#\$wgShowExceptionDetails  = true;
+#\$wgShowDBErrorBacktrace = true;
+#\$wgMainCacheType = CACHE_NONE;
+#\$wgDisableOutputCompression = true;
+
+#== Extensions ==
+#Non-critical extensions are activated in a separate files
+# for better managability
+//require_once( "\$aghWikiRoot/Extensions.conf" );
+
+#== Namespaces ==
+# Custom Namespace definitions and namespace-related settings for standard ones.
+# This better be included after Extensions.conf since some settings need to take effect after some extensions have been loaded.
+//require_once( "\$aghWikiRoot/Namespaces.conf" );
+
+
+## Message to show when the database is being backedup##
+#\$wgReadOnly = 'الويكي في طور الصيانة';
+
