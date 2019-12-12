@@ -40,7 +40,7 @@ require_once( "$SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME" );
 \$wgDBname = "$DB_NAME";
 \$wgDBuser = "$DB_USER";
 /*$wgDBpassword       = //defined in the secrets file included from this file */
-\$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary DATA DIRECTORY=\"/srv/DB/wikido.xyz\"";
+\$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
 
 #=== Action Paths ===
 \$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
