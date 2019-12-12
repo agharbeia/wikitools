@@ -29,7 +29,7 @@ CREATE TABLE `actor` (
   PRIMARY KEY (`actor_id`),
   UNIQUE KEY `actor_name` (`actor_name`),
   UNIQUE KEY `actor_user` (`actor_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -64,7 +64,7 @@ CREATE TABLE `archive` (
   KEY `ar_usertext_timestamp` (`ar_user_text`,`ar_timestamp`),
   KEY `ar_actor_timestamp` (`ar_actor`,`ar_timestamp`),
   KEY `ar_revid` (`ar_rev_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -82,7 +82,7 @@ CREATE TABLE `bot_passwords` (
   `bp_restrictions` blob NOT NULL,
   `bp_grants` blob NOT NULL,
   PRIMARY KEY (`bp_user`,`bp_app_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +101,7 @@ CREATE TABLE `category` (
   PRIMARY KEY (`cat_id`),
   UNIQUE KEY `cat_title` (`cat_title`),
   KEY `cat_pages` (`cat_pages`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,7 +123,7 @@ CREATE TABLE `categorylinks` (
   KEY `cl_sortkey` (`cl_to`,`cl_type`,`cl_sortkey`,`cl_from`),
   KEY `cl_timestamp` (`cl_to`,`cl_timestamp`),
   KEY `cl_collation_ext` (`cl_collation`,`cl_to`,`cl_type`,`cl_from`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,7 +145,7 @@ CREATE TABLE `change_tag` (
   UNIQUE KEY `change_tag_log_tag` (`ct_log_id`,`ct_tag`),
   UNIQUE KEY `change_tag_rev_tag` (`ct_rev_id`,`ct_tag`),
   KEY `change_tag_tag_id` (`ct_tag`,`ct_rc_id`,`ct_rev_id`,`ct_log_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -162,7 +162,7 @@ CREATE TABLE `comment` (
   `comment_data` blob,
   PRIMARY KEY (`comment_id`),
   KEY `comment_hash` (`comment_hash`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -179,7 +179,7 @@ CREATE TABLE `content` (
   `content_model` smallint(5) unsigned NOT NULL,
   `content_address` varbinary(255) NOT NULL,
   PRIMARY KEY (`content_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -194,7 +194,7 @@ CREATE TABLE `content_models` (
   `model_name` varbinary(64) NOT NULL,
   PRIMARY KEY (`model_id`),
   UNIQUE KEY `model_name` (`model_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -216,7 +216,7 @@ CREATE TABLE `externallinks` (
   KEY `el_index` (`el_index`(60)),
   KEY `el_index_60` (`el_index_60`,`el_id`),
   KEY `el_from_index_60` (`el_from`,`el_index_60`,`el_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -259,7 +259,7 @@ CREATE TABLE `filearchive` (
   KEY `fa_user_timestamp` (`fa_user_text`,`fa_timestamp`),
   KEY `fa_actor_timestamp` (`fa_actor`,`fa_timestamp`),
   KEY `fa_sha1` (`fa_sha1`(10))
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -294,7 +294,7 @@ CREATE TABLE `image` (
   KEY `img_timestamp` (`img_timestamp`),
   KEY `img_sha1` (`img_sha1`(10)),
   KEY `img_media_mime` (`img_media_type`,`img_major_mime`,`img_minor_mime`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -309,7 +309,7 @@ CREATE TABLE `image_comment_temp` (
   `imgcomment_description_id` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`imgcomment_name`,`imgcomment_description_id`),
   UNIQUE KEY `imgcomment_name` (`imgcomment_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -326,7 +326,7 @@ CREATE TABLE `imagelinks` (
   PRIMARY KEY (`il_from`,`il_to`),
   KEY `il_to` (`il_to`,`il_from`),
   KEY `il_backlinks_namespace` (`il_from_namespace`,`il_to`,`il_from`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -344,7 +344,7 @@ CREATE TABLE `interwiki` (
   `iw_local` tinyint(1) NOT NULL,
   `iw_trans` tinyint(4) NOT NULL DEFAULT '0',
   UNIQUE KEY `iw_prefix` (`iw_prefix`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -361,7 +361,7 @@ CREATE TABLE `ip_changes` (
   PRIMARY KEY (`ipc_rev_id`),
   KEY `ipc_rev_timestamp` (`ipc_rev_timestamp`),
   KEY `ipc_hex_time` (`ipc_hex`,`ipc_rev_timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -399,7 +399,7 @@ CREATE TABLE `ipblocks` (
   KEY `ipb_timestamp` (`ipb_timestamp`),
   KEY `ipb_expiry` (`ipb_expiry`),
   KEY `ipb_parent_block_id` (`ipb_parent_block_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -416,7 +416,7 @@ CREATE TABLE `iwlinks` (
   PRIMARY KEY (`iwl_from`,`iwl_prefix`,`iwl_title`),
   KEY `iwl_prefix_title_from` (`iwl_prefix`,`iwl_title`,`iwl_from`),
   KEY `iwl_prefix_from_title` (`iwl_prefix`,`iwl_from`,`iwl_title`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -459,7 +459,7 @@ CREATE TABLE `l10n_cache` (
   `lc_key` varbinary(255) NOT NULL,
   `lc_value` mediumblob NOT NULL,
   PRIMARY KEY (`lc_lang`,`lc_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -475,7 +475,7 @@ CREATE TABLE `langlinks` (
   `ll_title` varbinary(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`ll_from`,`ll_lang`),
   KEY `ll_lang` (`ll_lang`,`ll_title`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -491,7 +491,7 @@ CREATE TABLE `log_search` (
   `ls_log_id` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ls_field`,`ls_value`,`ls_log_id`),
   KEY `ls_log_id` (`ls_log_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -528,7 +528,7 @@ CREATE TABLE `logging` (
   KEY `type_action` (`log_type`,`log_action`,`log_timestamp`),
   KEY `log_user_text_type_time` (`log_user_text`,`log_type`,`log_timestamp`),
   KEY `log_user_text_time` (`log_user_text`,`log_timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -543,7 +543,7 @@ CREATE TABLE `module_deps` (
   `md_skin` varbinary(32) NOT NULL,
   `md_deps` mediumblob NOT NULL,
   PRIMARY KEY (`md_module`,`md_skin`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -574,7 +574,7 @@ CREATE TABLE `objectcache` (
   `exptime` datetime DEFAULT NULL,
   PRIMARY KEY (`keyname`),
   KEY `exptime` (`exptime`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -608,7 +608,7 @@ CREATE TABLE `oldimage` (
   KEY `oi_name_timestamp` (`oi_name`,`oi_timestamp`),
   KEY `oi_name_archive_name` (`oi_name`,`oi_archive_name`(14)),
   KEY `oi_sha1` (`oi_sha1`(10))
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -655,7 +655,7 @@ CREATE TABLE `page_props` (
   UNIQUE KEY `pp_page_propname` (`pp_page`,`pp_propname`),
   UNIQUE KEY `pp_propname_page` (`pp_propname`,`pp_page`),
   UNIQUE KEY `pp_propname_sortkey_page` (`pp_propname`,`pp_sortkey`,`pp_page`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -678,7 +678,7 @@ CREATE TABLE `page_restrictions` (
   KEY `pr_typelevel` (`pr_type`,`pr_level`),
   KEY `pr_level` (`pr_level`),
   KEY `pr_cascade` (`pr_cascade`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -696,7 +696,7 @@ CREATE TABLE `pagelinks` (
   PRIMARY KEY (`pl_from`,`pl_namespace`,`pl_title`),
   KEY `pl_namespace` (`pl_namespace`,`pl_title`,`pl_from`),
   KEY `pl_backlinks_namespace` (`pl_from_namespace`,`pl_namespace`,`pl_title`,`pl_from`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -717,7 +717,7 @@ CREATE TABLE `protected_titles` (
   `pt_create_perm` varbinary(60) NOT NULL,
   UNIQUE KEY `pt_namespace_title` (`pt_namespace`,`pt_title`),
   KEY `pt_timestamp` (`pt_timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -733,7 +733,7 @@ CREATE TABLE `querycache` (
   `qc_namespace` int(11) NOT NULL DEFAULT '0',
   `qc_title` varbinary(255) NOT NULL DEFAULT '',
   KEY `qc_type` (`qc_type`,`qc_value`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -747,7 +747,7 @@ CREATE TABLE `querycache_info` (
   `qci_type` varbinary(32) NOT NULL DEFAULT '',
   `qci_timestamp` binary(14) NOT NULL DEFAULT '19700101000000',
   PRIMARY KEY (`qci_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -767,7 +767,7 @@ CREATE TABLE `querycachetwo` (
   KEY `qcc_type` (`qcc_type`,`qcc_value`),
   KEY `qcc_title` (`qcc_type`,`qcc_namespace`,`qcc_title`),
   KEY `qcc_titletwo` (`qcc_type`,`qcc_namespacetwo`,`qcc_titletwo`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -815,7 +815,7 @@ CREATE TABLE `recentchanges` (
   KEY `rc_user_text` (`rc_user_text`,`rc_timestamp`),
   KEY `rc_actor` (`rc_actor`,`rc_timestamp`),
   KEY `rc_name_type_patrolled_timestamp` (`rc_namespace`,`rc_type`,`rc_patrolled`,`rc_timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -833,7 +833,7 @@ CREATE TABLE `redirect` (
   `rd_fragment` varbinary(255) DEFAULT NULL,
   PRIMARY KEY (`rd_from`),
   KEY `rd_ns_title` (`rd_namespace`,`rd_title`,`rd_from`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -884,7 +884,7 @@ CREATE TABLE `revision_actor_temp` (
   UNIQUE KEY `revactor_rev` (`revactor_rev`),
   KEY `actor_timestamp` (`revactor_actor`,`revactor_timestamp`),
   KEY `page_actor_timestamp` (`revactor_page`,`revactor_actor`,`revactor_timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -899,7 +899,7 @@ CREATE TABLE `revision_comment_temp` (
   `revcomment_comment_id` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`revcomment_rev`,`revcomment_comment_id`),
   UNIQUE KEY `revcomment_rev` (`revcomment_rev`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -933,7 +933,7 @@ CREATE TABLE `site_identifiers` (
   UNIQUE KEY `site_ids_type` (`si_type`,`si_key`),
   KEY `site_ids_site` (`si_site`),
   KEY `site_ids_key` (`si_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -952,7 +952,7 @@ CREATE TABLE `site_stats` (
   `ss_active_users` bigint(20) unsigned DEFAULT NULL,
   `ss_images` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`ss_row_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -983,7 +983,7 @@ CREATE TABLE `sites` (
   KEY `sites_protocol` (`site_protocol`),
   KEY `sites_domain` (`site_domain`),
   KEY `sites_forward` (`site_forward`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -998,7 +998,7 @@ CREATE TABLE `slot_roles` (
   `role_name` varbinary(64) NOT NULL,
   PRIMARY KEY (`role_id`),
   UNIQUE KEY `role_name` (`role_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1015,7 +1015,7 @@ CREATE TABLE `slots` (
   `slot_origin` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`slot_revision_id`,`slot_role_id`),
   KEY `slot_revision_origin_role` (`slot_revision_id`,`slot_origin`,`slot_role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1035,7 +1035,7 @@ CREATE TABLE `tag_summary` (
   UNIQUE KEY `tag_summary_rc_id` (`ts_rc_id`),
   UNIQUE KEY `tag_summary_log_id` (`ts_log_id`),
   UNIQUE KEY `tag_summary_rev_id` (`ts_rev_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1053,7 +1053,7 @@ CREATE TABLE `templatelinks` (
   PRIMARY KEY (`tl_from`,`tl_namespace`,`tl_title`),
   KEY `tl_namespace` (`tl_namespace`,`tl_title`,`tl_from`),
   KEY `tl_backlinks_namespace` (`tl_from_namespace`,`tl_namespace`,`tl_title`,`tl_from`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1083,7 +1083,7 @@ CREATE TABLE `transcache` (
   `tc_contents` blob,
   `tc_time` binary(14) NOT NULL,
   PRIMARY KEY (`tc_url`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1097,7 +1097,7 @@ CREATE TABLE `updatelog` (
   `ul_key` varbinary(255) NOT NULL,
   `ul_value` blob,
   PRIMARY KEY (`ul_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1129,7 +1129,7 @@ CREATE TABLE `uploadstash` (
   UNIQUE KEY `us_key` (`us_key`),
   KEY `us_user` (`us_user`),
   KEY `us_timestamp` (`us_timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1173,7 +1173,7 @@ CREATE TABLE `user_former_groups` (
   `ufg_user` int(10) unsigned NOT NULL DEFAULT '0',
   `ufg_group` varbinary(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`ufg_user`,`ufg_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1190,7 +1190,7 @@ CREATE TABLE `user_groups` (
   PRIMARY KEY (`ug_user`,`ug_group`),
   KEY `ug_group` (`ug_group`),
   KEY `ug_expiry` (`ug_expiry`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1206,7 +1206,7 @@ CREATE TABLE `user_newtalk` (
   `user_last_timestamp` varbinary(14) DEFAULT NULL,
   KEY `un_user_id` (`user_id`),
   KEY `un_user_ip` (`user_ip`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1222,7 +1222,7 @@ CREATE TABLE `user_properties` (
   `up_value` blob,
   PRIMARY KEY (`up_user`,`up_property`),
   KEY `user_properties_property` (`up_property`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1235,7 +1235,7 @@ DROP TABLE IF EXISTS `valid_tag`;
 CREATE TABLE `valid_tag` (
   `vt_tag` varbinary(255) NOT NULL,
   PRIMARY KEY (`vt_tag`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1255,7 +1255,7 @@ CREATE TABLE `watchlist` (
   UNIQUE KEY `wl_user` (`wl_user`,`wl_namespace`,`wl_title`),
   KEY `namespace_title` (`wl_namespace`,`wl_title`),
   KEY `wl_user_notificationtimestamp` (`wl_user`,`wl_notificationtimestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=binary DATA DIRECTORY="/srv/DB/wikido.xyz";
+) ENGINE=InnoDB DEFAULT CHARSET=binary;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

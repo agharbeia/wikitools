@@ -1,10 +1,5 @@
 #!/bin/bash
 
-WIKI_HANDLE=$1
-WIKI_NAME=$2
-WIKI_USER=$3
-WIKI_PASS=$4
-
 #   Configuration variables are used in this script,
 #+ and in the configuration files' templates.
 #
@@ -42,6 +37,11 @@ if [[ -z $1 || -z $2 || -z $3 || -z $4 ]]; then
 USAGE
 	exit 85
 fi
+
+WIKI_HANDLE=$1
+WIKI_NAME=$2
+WIKI_USER=$3
+WIKI_PASS=$4
 
 echo -e "Configuring for:\nWIKI_HANDLE: $WIKI_HANDLE\nWIKI_NAME: $WIKI_NAME" >&2
 
