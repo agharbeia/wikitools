@@ -15,12 +15,16 @@ if ( defined( 'MW_DB' ) ) {
     $wikiname = substr(MW_DB, 0, -5);
     require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 } else {
-    // Web server
-    $server = $_SERVER['SERVER_NAME'];
-    if ( preg_match( '/^(.*)\.wikido.xyz$/', $server, $matches ) ) {
-        $wikiname = $matches[1];
-    } else {
-        die( "We should never be here since Apache shouldn't have responded to a request to". $server );
-    }
+    // Assume it being a web request
+	if ( array_key_exists('SERVER_NAME', $_SERVER) ) {
+	    $server = $_SERVER['SERVER_NAME'];
+	    if ( preg_match( '/^(.*)\.wikido.xyz$/', $server, $matches ) ) {
+    	    $wikiname = $matches[1];
+	    } else {
+		die( "We should not be here since Apache shouldn't have routed a request to $server to WikiDo." );
+    	}
+	} else {
+		die("Couldn't guess which WikiDo member to work on.");
+	}
     require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 }
