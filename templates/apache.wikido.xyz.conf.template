@@ -5,8 +5,8 @@
 	ServerAdmin postmaster@$FAMILY_DOMAIN
 
 	DocumentRoot "$WIKI_ROOT"
-	DirectoryIndex /mw/index.php
-	ErrorDocument 404 /mw/thumb_handler.php
+	DirectoryIndex /$MW_INSTANCE_DIR/index.php
+	ErrorDocument 404 /$MW_INSTANCE_DIR/thumb_handler.php
 
 	ErrorLog \${APACHE_LOG_DIR}/${WIKI_FQDN}_error.log
 	LogLevel warn
@@ -17,14 +17,16 @@
 	SSLCertificateFile /etc/letsencrypt/live/$FAMILY_NAME/cert.pem
 	SSLCertificateChainFile /etc/letsencrypt/live/$FAMILY_NAME/chain.pem
 
-	RedirectMatch permanent ^/\.well-known/change-password$ /Special:PasswordReset
-	Alias /repo $REPOSITORY_DIR
+	Alias /$REPO_ALIAS $REPOSITORY_DIR
+	${URL_PREFIX:+"Alias /$URL_PREFIX $WIKI_ROOT/$MW_INSTANCE_DIR/index.php"}
+	RedirectMatch temp ^/\.well-known/change-password$ ${URL_PREFIX:+"/$URL_PREFIX"}/Special:PasswordReset
 	RedirectMatch temp "^/favicon.ico$" https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/64px-MediaWiki-notext.svg.png
+	Redirect temp /id/ ${URL_PREFIX:+"/$URL_PREFIX"}/Special:URIResolver/
 
 	EnableSendfile On
 
 	## Secure files' repository
-	<Directory "/srv/repositorea">
+	<Directory "$REPO_BASE_DIR">
 		Allow from all
 		Require all granted
 		AllowOverride None
@@ -33,17 +35,21 @@
 		FileETag MTime Size
 	</Directory>
 
-	<Directory $WIKI_ROOT>
+	<Directory "$WIKI_ROOT">
 		SSLRequireSSL
 		Allow from all
 		Require all granted
 		AllowOverride All
 		Options ExecCGI FollowSymLinks
 
-		FallBackResource /mw/index.php
+		FallBackResource /$MW_INSTANCE_DIR/index.php
 	</Directory>
 
 	php_value upload_max_filesize 128M
 	php_value post_max_size 132M
 	php_value memory_limit 128M
+
+        php_value session.use_strict_mode true  
+        php_value session.cookie_secure true 
+        php_value session.use_only_cookies true
 </VirtualHost>

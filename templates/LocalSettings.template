@@ -3,25 +3,22 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	exit;
 } # Protect against web entry
 
-\$wgSitename = "$WIKI_NAME";
+\$wgSitename = "$WIKI_TITLE";
 \$wgMetaNamespace = "ويكي";
 
 
 #== Server ==
-\$wgServer = "https://$WIKI_HANDLE.wikido.xyz";
-\$wgEmergencyContact = "webmaster@wikido.xyz";
-\$wgPasswordSender = "robot@$WIKI_HANDLE.wikido.xyz";
-\$wgScriptPath = "/mw";
+\$wgServer = "https://$HOSTNAME.$FAMILY_DOMAIN";
+\$wgEmergencyContact = "webmaster@$FAMILY_DOMAIN";
+\$wgPasswordSender = "robot@$HOSTNAME.$FAMILY_DOMAIN";
+\$wgScriptPath = "/$MW_INSTANCE_DIR";
 \$wgResourceBasePath = \$wgScriptPath;
-\$aghWikiRoot = realpath(__DIR__);
-\$wgExtensionDirectory  = "\$aghWikiRoot/mwex";
-\$wgExtensionAssetsPath = "/mwex";
 
-\$wgLogo = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/135px-MediaWiki-notext.svg.png";
+\$wgLogo = "//upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/135px-MediaWiki-notext.svg.png";
 \$wgEnableEmail = true;
 
 #=== Locale and languages ===
-\$wgShellLocale = "en_GB.UTF-8";
+\$wgShellLocale = "ar_EG.UTF-8";
 
 # Site language code, should be one of the list in ./languages/Names.php
 \$wgLanguageCode = "ar";
@@ -39,23 +36,23 @@ require_once( "$SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME" );
 \$wgDBserver = "localhost";
 \$wgDBname = "$DB_NAME";
 \$wgDBuser = "$DB_USER";
-/*$wgDBpassword       = //defined in the secrets file included from this file */
+/*\$wgDBpassword       = //defined in the secrets file included from this file */
 \$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
 
 #=== Action Paths ===
 \$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
 foreach ( \$actions as \$action ) {
-  \$wgActionPaths[\$action] = "/\$1/\$action";
+  \$wgActionPaths[\$action] = "{URL_PREFIX:+"Alias /$URL_PREFIX}/\$1/\$action";
 }
-\$wgActionPaths['view'] = "/\$1";
+\$wgActionPaths['view'] = "${URL_PREFIX:+"Alias /$URL_PREFIX}/\$1";
 \$wgArticlePath = \$wgActionPaths['view'];
 \$wgUsePathInfo = true;
 
 
 #== File uploads ==
 \$wgEnableUploads  = true;
-\$wgUploadDirectory = "/srv/repositorea/wikido.xyz/$WIKI_HANDLE";
-\$wgUploadPath	= "/repo";
+\$wgUploadDirectory = "$REPOSITORY_DIR";
+\$wgUploadPath	= "/$REPO_ALIAS";
 \$wgUseImageMagick = true;
 \$wgImageMagickConvertCommand = "/usr/bin/convert";
 //\$wgAllowImageTag = true;
@@ -67,7 +64,7 @@ foreach ( \$actions as \$action ) {
 \$wgUseInstantCommons = true;
 \$wgAllowTitlesInSVG = true;
 \$wgTiffThumbnailType = [ 'jpg', 'image/jpeg' ];
-
+\$wgUseInstantCommons  = true;
 \$wgFileExtensions = [
 #graphics:
 'png', 'gif', 'jpg', 'jpeg', 'svg',  'tiff', 'tif', 'xcf', 'ora',
@@ -82,20 +79,15 @@ foreach ( \$actions as \$action ) {
 ];
 
 
-#== Credits and licensing ==
-\$wgRightsPage = "ويكي:عن";
-\$wgRightsUrl = "https://creativecommons.org/licenses/by-sa/4.0/";
-\$wgRightsText = "Creative Commons Attribution-ShareAlike";
-\$wgRightsIcon = "\$wgResourceBasePath/resources/assets/licenses/cc-by-sa.png";
+#== Shared memory ==
+\$wgMainCacheType  = CACHE_ACCEL;
+\$wgCacheDirectory = "$CACHE_DIR";
+\$wgFileCacheDirectory = \$wgCacheDirectory;
+//\$wgUseFileCache = false;	purging is faulty T26575 & UTF-8 names suffer T148684.
+\$wgUseGzip = true;
 
-#== Appearance ==
-\$wgDefaultSkin	= "Vector";
-wfLoadSkin( 'Timeless' );
-//wfLoadSkin( 'Modern' );
-wfLoadSkin( 'MonoBook' );
-wfLoadSkin( 'Vector' );
 
-#== Accessibility and exposure ==
+#== Permissions and exposure ==
 # This is a public-readonly wiki
 # editing is by invitation and requires a confirmed email address
 \$wgGroupPermissions['*']['createaccount'] = false;
@@ -106,11 +98,6 @@ wfLoadSkin( 'Vector' );
 \$wgGroupPermissions['autoconfirmed']['undelete'] = true;
 \$wgGroupPermissions['autoconfirmed']['browsearchive'] = true;
 \$wgGroupPermissions['autoconfirmed']['proxyunbannable'] = true;
-\$wgGroupPermissions['staff']['deletedtext'] = true;	
-\$wgGroupPermissions['staff']['protect'] = true;
-\$wgGroupPermissions['staff']['editprotected'] = true;
-\$wgGroupPermissions['staff']['patrol'] = true;
-\$wgGroupPermissions['staff']['autopatrol'] = true;
 
 \$wgUseRCPatrol = false;
 
@@ -130,27 +117,34 @@ wfLoadSkin( 'Vector' );
 \$wgNoFollowLinks = false;
 \$wgReferrerPolicy="origin-when-crossorigin";
 
-#== Shared memory ==
-\$wgMainCacheType    = CACHE_ACCEL;
-\$wgMemCachedServers = [];
-\$wgCacheDirectory = "/var/cache/wikido.xyz/$WIKI_HANDLE";
+
+#== Credits and licensing ==
+## License and Creative Commons licenses are supported so far.
+\$wgRightsPage = "ويكي:عن";
+\$wgRightsUrl  = "https://creativecommons.org/licenses/by-sa/4.0/deed.ar";
+\$wgRightsText = "برخصة المشاع الإبداعي: النسبة-المشاركةبالمثل";
+\$wgRightsIcon = "\$wgResourceBasePath/resources/assets/licenses/cc-by-sa.png";
+
+
+#== Appearance ==
+\$wgDefaultSkin	= "Vector";
+wfLoadSkin( 'Timeless' );
+//wfLoadSkin( 'Modern' );
+wfLoadSkin( 'MonoBook' );
+wfLoadSkin( 'Vector' );
+
 
 ##== Miscellaneous ==
 \$wgEnableScaryTranscluding = true;
-\$wgUseInstantCommons  = true;
 \$wgUseETag		= true;
 \$wgPingback = true;
 \$wgDiff3 = "/usr/bin/diff3";
 \$wgFixDoubleRedirects = true;
 \$wgMaxCredits = 8;
 //\$wgLocalInterwikis = ['كفتة'];
+\$wgCategoryCollation="numeric";
 
-
-#=== Debugging ===
-#\$wgShowExceptionDetails  = true;
-#\$wgShowDBErrorBacktrace = true;
-#\$wgMainCacheType = CACHE_NONE;
-#\$wgDisableOutputCompression = true;
+\$wdoWikiRoot = realpath(__DIR__);
 
 #== Extensions ==
 #Non-critical extensions are activated in a separate files
@@ -162,6 +156,12 @@ wfLoadSkin( 'Vector' );
 # This better be included after Extensions.conf since some settings need to take effect after some extensions have been loaded.
 //require_once( "\$aghWikiRoot/Namespaces.conf" );
 
+
+#=== Debugging ===
+#\$wgShowExceptionDetails  = true;
+#\$wgShowDBErrorBacktrace = true;
+#\$wgMainCacheType = CACHE_NONE;
+#\$wgDisableOutputCompression = true;
 
 ## Message to show when the database is being backedup##
 #\$wgReadOnly = 'الويكي في طور الصيانة';
