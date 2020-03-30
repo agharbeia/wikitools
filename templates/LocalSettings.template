@@ -8,13 +8,13 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 
 
 #== Server ==
-\$wgServer = "https://$HOSTNAME.$FAMILY_DOMAIN";
-\$wgEmergencyContact = "webmaster@$FAMILY_DOMAIN";
-\$wgPasswordSender = "robot@$HOSTNAME.$FAMILY_DOMAIN";
+\$wgServer = "https://$WIKI_FQDN";
+\$wgEmergencyContact = "webmaster@$APEX";
+\$wgPasswordSender = "robot@$WIKI_FQDN";
 \$wgScriptPath = "/$MW_INSTANCE_DIR";
 \$wgResourceBasePath = \$wgScriptPath;
 
-\$wgLogo = "//upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/135px-MediaWiki-notext.svg.png";
+//\$wgLogo = "//upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/135px-MediaWiki-notext.svg.png";
 \$wgEnableEmail = true;
 
 #=== Locale and languages ===
@@ -29,7 +29,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 #=== Secrets ===
 ## The followiong file contain secret information necessary
 ## to the operation of this wiki, which is kept out of the webroot.
-require_once( "$SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME" );
+require_once( "$SECRETS_DIR/$WIKI_FQDN" );
 
 #=== Database ===
 \$wgDBtype = "mysql";
@@ -42,9 +42,9 @@ require_once( "$SECRETS_DIR/$WIKI_HANDLE.$FAMILY_NAME" );
 #=== Action Paths ===
 \$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
 foreach ( \$actions as \$action ) {
-  \$wgActionPaths[\$action] = "{URL_PREFIX:+"Alias /$URL_PREFIX}/\$1/\$action";
+  \$wgActionPaths[\$action] = "${URL_PREFIX:+"/$URL_PREFIX"}/\$1/\$action";
 }
-\$wgActionPaths['view'] = "${URL_PREFIX:+"Alias /$URL_PREFIX}/\$1";
+\$wgActionPaths['view'] = "${URL_PREFIX:+"/$URL_PREFIX"}/\$1";
 \$wgArticlePath = \$wgActionPaths['view'];
 \$wgUsePathInfo = true;
 
@@ -55,7 +55,6 @@ foreach ( \$actions as \$action ) {
 \$wgUploadPath	= "/$REPO_ALIAS";
 \$wgUseImageMagick = true;
 \$wgImageMagickConvertCommand = "/usr/bin/convert";
-//\$wgAllowImageTag = true;
 \$wgAllowUserJs = true;
 \$wgAllowUserCss = true;
 \$wgAllowCopyUploads = true;
@@ -82,8 +81,8 @@ foreach ( \$actions as \$action ) {
 #== Shared memory ==
 \$wgMainCacheType  = CACHE_ACCEL;
 \$wgCacheDirectory = "$CACHE_DIR";
-\$wgFileCacheDirectory = \$wgCacheDirectory;
-//\$wgUseFileCache = false;	purging is faulty T26575 & UTF-8 names suffer T148684.
+/*\$wgFileCacheDirectory = \$wgCacheDirectory;
+\$wgUseFileCache = false;*/	//buggy: T26575:purging is faulty & T148684:UTF-8 names suffer.
 \$wgUseGzip = true;
 
 
@@ -129,7 +128,6 @@ foreach ( \$actions as \$action ) {
 #== Appearance ==
 \$wgDefaultSkin	= "Vector";
 wfLoadSkin( 'Timeless' );
-//wfLoadSkin( 'Modern' );
 wfLoadSkin( 'MonoBook' );
 wfLoadSkin( 'Vector' );
 
@@ -141,20 +139,18 @@ wfLoadSkin( 'Vector' );
 \$wgDiff3 = "/usr/bin/diff3";
 \$wgFixDoubleRedirects = true;
 \$wgMaxCredits = 8;
-//\$wgLocalInterwikis = ['كفتة'];
+//\$wgLocalInterwikis = [''];
 \$wgCategoryCollation="numeric";
-
-\$wdoWikiRoot = realpath(__DIR__);
 
 #== Extensions ==
 #Non-critical extensions are activated in a separate files
 # for better managability
-//require_once( "\$aghWikiRoot/Extensions.conf" );
+//require_once( realpath(__DIR__)."/Extensions.conf" );
 
 #== Namespaces ==
 # Custom Namespace definitions and namespace-related settings for standard ones.
 # This better be included after Extensions.conf since some settings need to take effect after some extensions have been loaded.
-//require_once( "\$aghWikiRoot/Namespaces.conf" );
+//require_once( realpath(__DIR__)."/Namespaces.conf" );
 
 
 #=== Debugging ===

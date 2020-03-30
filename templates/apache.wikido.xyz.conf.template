@@ -2,7 +2,7 @@
 	ServerName $WIKI_FQDN
 	ServerAlias www.$WIKI_FQDN
 	UseCanonicalName On
-	ServerAdmin postmaster@$FAMILY_DOMAIN
+	ServerAdmin postmaster@$APEX
 
 	DocumentRoot "$WIKI_ROOT"
 	DirectoryIndex /$MW_INSTANCE_DIR/index.php
@@ -13,20 +13,20 @@
 	CustomLog \${APACHE_LOG_DIR}/${WIKI_FQDN}_access.log combined
 
 	SSLEngine on
-	SSLCertificateKeyFile /etc/letsencrypt/live/$FAMILY_NAME/privkey.pem
-	SSLCertificateFile /etc/letsencrypt/live/$FAMILY_NAME/cert.pem
-	SSLCertificateChainFile /etc/letsencrypt/live/$FAMILY_NAME/chain.pem
+	SSLCertificateKeyFile /etc/letsencrypt/live/$APEX/privkey.pem
+	SSLCertificateFile /etc/letsencrypt/live/$APEX/cert.pem
+	SSLCertificateChainFile /etc/letsencrypt/live/$APEX/chain.pem
 
 	Alias /$REPO_ALIAS $REPOSITORY_DIR
 	${URL_PREFIX:+"Alias /$URL_PREFIX $WIKI_ROOT/$MW_INSTANCE_DIR/index.php"}
 	RedirectMatch temp ^/\.well-known/change-password$ ${URL_PREFIX:+"/$URL_PREFIX"}/Special:PasswordReset
-	RedirectMatch temp "^/favicon.ico$" https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/64px-MediaWiki-notext.svg.png
+#	RedirectMatch temp "^/favicon.ico$" https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/64px-MediaWiki-notext.svg.png
 	Redirect temp /id/ ${URL_PREFIX:+"/$URL_PREFIX"}/Special:URIResolver/
 
 	EnableSendfile On
 
 	## Secure files' repository
-	<Directory "$REPO_BASE_DIR">
+	<Directory "$REPOSITORY_DIR">
 		Allow from all
 		Require all granted
 		AllowOverride None
@@ -42,14 +42,14 @@
 		AllowOverride All
 		Options ExecCGI FollowSymLinks
 
-		FallBackResource /$MW_INSTANCE_DIR/index.php
+		FallBackResource /${URL_PREFIX:+"$URL_PREFIX"}
 	</Directory>
 
 	php_value upload_max_filesize 128M
 	php_value post_max_size 132M
 	php_value memory_limit 128M
 
-        php_value session.use_strict_mode true  
-        php_value session.cookie_secure true 
-        php_value session.use_only_cookies true
+	php_value session.use_strict_mode true  
+	php_value session.cookie_secure true 
+	php_value session.use_only_cookies true
 </VirtualHost>
