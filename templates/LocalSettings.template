@@ -14,7 +14,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 \$wgScriptPath = "/$MW_INSTANCE_DIR";
 \$wgResourceBasePath = \$wgScriptPath;
 
-//\$wgLogo = "//upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/135px-MediaWiki-notext.svg.png";
+\$wgLogo = "\$URL_PREFIX/Special:Filepath/logo.svg";
 \$wgEnableEmail = true;
 
 #=== Locale and languages ===
@@ -42,9 +42,9 @@ require_once( "$SECRETS_DIR/$WIKI_FQDN" );
 #=== Action Paths ===
 \$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
 foreach ( \$actions as \$action ) {
-  \$wgActionPaths[\$action] = "${URL_PREFIX:+"/$URL_PREFIX"}/\$1/\$action";
+  \$wgActionPaths[\$action] = "$URL_PREFIX/\$1/\$action";
 }
-\$wgActionPaths['view'] = "${URL_PREFIX:+"/$URL_PREFIX"}/\$1";
+\$wgActionPaths['view'] = "$URL_PREFIX/\$1";
 \$wgArticlePath = \$wgActionPaths['view'];
 \$wgUsePathInfo = true;
 

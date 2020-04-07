@@ -36,7 +36,7 @@ echo -e "Configuring for:\nWIKI_HANDLE: $WIKI_HANDLE\nWIKI_TITLE: $WIKI_TITLE" >
 # Wiki information:
 APEX=wikido.xyz
 MW_INSTANCE_DIR=mw
-URL_PREFIX=""
+URL_PREFIX=""   #with leading slash
 REPO_ALIAS=repo
 
 # Directories:
@@ -100,7 +100,24 @@ mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_TEMPLATE && echo "S
 
 
 #create 1st wiki user
-php $MW_SOURCE/maintenance/createAndPromote.php --bureaucrat --sysop --wiki $DB_NAME $WIKI_USER $WIKI_PASS
+sudo -u www-data php $MW_SOURCE/maintenance/createAndPromote.php --bureaucrat --sysop --wiki $DB_NAME $WIKI_USER $WIKI_PASS
+
+#create logo
+HANDLE_HASH=$(echo -n $WIKI_HANDLE | md5sum)
+HANDLE_HASH=${HANDLE_HASH^^}
+FILL1="#${HANDLE_HASH:0:6}"
+R=0$(echo "ibase=16;obase=F;(80+${HANDLE_HASH:0:2})%FF" | bc)
+G=0$(echo "ibase=16;obase=F;(80+${HANDLE_HASH:2:2})%FF" | bc)
+B=0$(echo "ibase=16;obase=F;(80+${HANDLE_HASH:4:2})%FF" | bc)
+FILL2="#${R:(-2)}${G:(-2)}${B:(-2)}"
+#Make sure FILL1 > FILL2
+if [[ 0x${HANDLE_HASH:0:2} -lt 0x$R ]]; then
+	xtmpx=$FILL1
+	FILL1=$FILL2
+	FILL2=$xtmpx
+fi
+conf_from_template wikido.xyz-logo.svg.template > $WIKI_ROOT/logo.svg
+sudo -u www-data php $MW_SOURCE/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
 
 
 a2ensite $WIKI_FQDN.conf

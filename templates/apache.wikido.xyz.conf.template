@@ -18,10 +18,10 @@
 	SSLCertificateChainFile /etc/letsencrypt/live/$APEX/chain.pem
 
 	Alias /$REPO_ALIAS $REPOSITORY_DIR
-	${URL_PREFIX:+"Alias /$URL_PREFIX $WIKI_ROOT/$MW_INSTANCE_DIR/index.php"}
-	RedirectMatch temp ^/\.well-known/change-password$ ${URL_PREFIX:+"/$URL_PREFIX"}/Special:PasswordReset
-#	RedirectMatch temp "^/favicon.ico$" https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/MediaWiki-notext.svg/64px-MediaWiki-notext.svg.png
-	Redirect temp /id/ ${URL_PREFIX:+"/$URL_PREFIX"}/Special:URIResolver/
+	${URL_PREFIX:+"Alias $URL_PREFIX $WIKI_ROOT/$MW_INSTANCE_DIR/index.php"}
+	RedirectMatch temp ^/\.well-known/change-password$ $URL_PREFIX/Special:PasswordReset
+	RedirectMatch temp "^/favicon.ico$" $URL_PREFIX/Special:Filepath/logo.svg?width=64
+	Redirect temp /id/ $URL_PREFIX/Special:URIResolver/
 
 	EnableSendfile On
 
@@ -42,7 +42,7 @@
 		AllowOverride All
 		Options ExecCGI FollowSymLinks
 
-		FallBackResource /${URL_PREFIX:+"$URL_PREFIX"}
+		FallBackResource ${URL_PREFIX:-/}
 	</Directory>
 
 	php_value upload_max_filesize 128M
