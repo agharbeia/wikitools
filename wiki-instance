@@ -103,15 +103,13 @@ mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_TEMPLATE && echo "S
 sudo -u www-data php $MW_SOURCE/maintenance/createAndPromote.php --bureaucrat --sysop --wiki $DB_NAME $WIKI_USER $WIKI_PASS
 
 #create logo
+#HANDLE_HASH=$(jacksum -a $CHECKSUM -F "#CHECKSUM" -X -q txt:$WIKI_HANDLE)
 HANDLE_HASH=$(echo -n $WIKI_HANDLE | md5sum)
-HANDLE_HASH=${HANDLE_HASH^^}
-FILL1="#${HANDLE_HASH:0:6}"
-R=0$(echo "ibase=16;obase=F;(80+${HANDLE_HASH:0:2})%FF" | bc)
-G=0$(echo "ibase=16;obase=F;(80+${HANDLE_HASH:2:2})%FF" | bc)
-B=0$(echo "ibase=16;obase=F;(80+${HANDLE_HASH:4:2})%FF" | bc)
-FILL2="#${R:(-2)}${G:(-2)}${B:(-2)}"
-#Make sure FILL1 > FILL2
-if [[ 0x${HANDLE_HASH:0:2} -lt 0x$R ]]; then
+
+FILL1=${HANDLE_HASH:0:6}
+FILL2=$(for o in {0..4..2}; do printf '%02X' $(( (0x${HANDLE_HASH:o:2} + 0x80) % 0xFF )); done)
+
+if [[ 0x$FILL1 -lt 0x$FILL2 ]]; then
 	xtmpx=$FILL1
 	FILL1=$FILL2
 	FILL2=$xtmpx
