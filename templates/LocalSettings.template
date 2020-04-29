@@ -84,6 +84,7 @@ foreach ( \$actions as \$action ) {
 /*\$wgFileCacheDirectory = \$wgCacheDirectory;
 \$wgUseFileCache = false;*/	//buggy: T26575:purging is faulty & T148684:UTF-8 names suffer.
 \$wgUseGzip = true;
+\$wgTmpDirectory = "$TEMP_DIR";
 
 
 #== Permissions and exposure ==

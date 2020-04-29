@@ -106,13 +106,15 @@ sudo -u www-data php $MW_SOURCE/maintenance/createAndPromote.php --bureaucrat --
 #HANDLE_HASH=$(jacksum -a $CHECKSUM -F "#CHECKSUM" -X -q txt:$WIKI_HANDLE)
 HANDLE_HASH=$(echo -n $WIKI_HANDLE | md5sum)
 
-FILL1=${HANDLE_HASH:0:6}
-FILL2=$(for o in {0..4..2}; do printf '%02X' $(( (0x${HANDLE_HASH:o:2} + 0x80) % 0xFF )); done)
+COLOUR1=${HANDLE_HASH:0:6}
+COLOUR2=$(for o in {0..4..2}; do printf '%02X' $(( (0x${HANDLE_HASH:o:2} + 0x80) % 0xFF )); done)
 
-if [[ 0x$FILL1 -lt 0x$FILL2 ]]; then
-	xtmpx=$FILL1
-	FILL1=$FILL2
-	FILL2=$xtmpx
+if [[ 0x$COLOUR1 -lt 0x$COLOUR2 ]]; then
+	FILL1=#$COLOUR2
+	FILL2=#$COLOUR1
+else
+	FILL1=#$COLOUR1
+	FILL2=#$COLOUR2
 fi
 conf_from_template wikido.xyz-logo.svg.template > $WIKI_ROOT/logo.svg
 sudo -u www-data php $MW_SOURCE/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
