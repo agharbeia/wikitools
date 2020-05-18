@@ -14,7 +14,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 \$wgScriptPath = "/$MW_INSTANCE_DIR";
 \$wgResourceBasePath = \$wgScriptPath;
 
-\$wgLogo = "\$URL_PREFIX/Special:Filepath/logo.svg";
+\$wgLogo = "$URL_PREFIX/Special:Filepath/logo.svg";
 \$wgEnableEmail = true;
 
 #=== Locale and languages ===
