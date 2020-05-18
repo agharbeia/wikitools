@@ -116,7 +116,7 @@ else
 	FILL1=#$COLOUR1
 	FILL2=#$COLOUR2
 fi
-conf_from_template wikido.xyz-logo.svg.template > $WIKI_ROOT/logo.svg
+conf_from_template $TEMPLATES_SOURCE/wikido.xyz-logo.svg.template > $WIKI_ROOT/logo.svg
 sudo -u www-data php $MW_SOURCE/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
 
 
