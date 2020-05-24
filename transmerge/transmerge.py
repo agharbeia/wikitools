@@ -31,19 +31,18 @@ ap.add_argument("-n", "--new",
 		default='new.ar.json',
 		help="new transltions file")
 
-ap.add_argument("map"
 args = ap.parse_args()
 
-def transfer_localisation:
-"""
-1 load catalogue file's content into catalogue memory
-2 load old localised file's content in the old locale memory
-3 for each string in the catalogue_memory, append each matching string from old_locale_memory to the new locale memory, and remove both strings from the catalogue and old locale memories
-4 write the new_locale_memory to new.locale
-5 output the strings remaining in catalogue_memory to the new.base file
-6 output the strings remaining in the old_locale_memory to the deleted.locale
+def transfer_localisation():
+	"""
+	1 load catalogue file's content into catalogue memory
+	2 load old localised file's content in the old locale memory
+	3 for each string in the catalogue_memory, append each matching string from old_locale_memory to the new locale memory, and remove both strings from the catalogue and old locale memories
+	4 write the new_locale_memory to new.locale
+	5 output the strings remaining in catalogue_memory to the new.base file
+	6 output the strings remaining in the old_locale_memory to the deleted.locale
 
-"""
+	"""
 
 ##for the sake of simplification of code, English is the base and Arabic is old locale, hard-coded, until handling of arguments is added.
 
@@ -107,10 +106,10 @@ def transfer_localisation:
 	with open("./tests/del.ar.json", 'w', encoding='utf-8') as del_locale:
 		json.dump(old_locale_memory, del_locale, ensure_ascii=False, indent='\t')
 
-def merge_localisation:
-"""
-Merges new_strings_file with base_locale_file
-"""
+def merge_localisation():
+	"""
+	Merges new_strings_file with base_locale_file
+	"""
 	#read new strings strings from file into memory
 	print("Reading new strings' file from " + args.new_strings_file + " into memory.")
 	with open(args.new_strings_file, 'r', encoding='utf-8') as new_strings_file:
