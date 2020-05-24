@@ -117,15 +117,15 @@ Merges new_strings_file with base_locale_file
 		new_strings_memory = json.load(new_strings_file, object_pairs_hook=OrderedDict)
 
 	#read base locale strings from file into memory
-	print("Reading base locale string from " + args.base_locale + " into memory.")
-	with open(args.base_locale_file, 'r') as base_locale_file:
-		base_locale_memory = json.load(base_locale_file, object_pairs_hook=OrderedDict)
+	print("Reading locale base string from " + args.locale_base_file + " into memory.")
+	with open(args.locale_base_file, 'r') as locale_base_file:
+		locale_base_memory = json.load(locale_base_file, object_pairs_hook=OrderedDict)
 
 	for string_id in new_strings_memory:
-		base_locale_memory[string_id] = new_strings_memory[string_id]
+		locale_base_memory[string_id] = new_strings_memory[string_id]
 
 	#write the merged_locale_memory to disk in a JSON file
-	print("Writing merged localisation strings which to file: " + merged_locale_file)
-	with open(args.merged_locale_file, 'w', encoding='utf-8') as merged_locale_file:
-		json.dump(base_locale_memory, merged_locale_file, ensure_ascii=False, indent='\t')
+	print("Writing merged localisation strings which to file: " + args.locale_merged_file)
+	with open(args.locale_merged_file, 'w', encoding='utf-8') as locale_merged_file:
+		json.dump(locale_base_memory, locale_merged_file, ensure_ascii=False, indent='\t')
 
