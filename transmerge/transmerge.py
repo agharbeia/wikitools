@@ -1,77 +1,92 @@
 #!/usr/bin/python3
 
-# A tool to help update a localisation file in reference to an updated source file
 import sys
 import argparse
-
 import json
 from collections import OrderedDict
 
-## Definitions:
-# catalogue file: Base locale from the newer release. This is the reference for modifications.
-# old locale file: Target locale from older release. This is the bse for the new localisation
+help_text = """
+A tool to maintain a forked localisation, with regard to an updated catalogue.
+
+It is used to merge a localisation that is different from that released by
+the upstream localisers into the corresponding newer upstream localisation
+while keeping the differences from the fork, and accounting for the addition
+and deletion of strings.
+
+The procedure is two-step: first a localisation file is produced that has the
+forked localisation and any strings added in the newer release from upstream,
+untranslated.
+In a later step, after the added strings have been translated, they are
+merged back in the final localisation file.
+
+In the first step, strings from the forked localisation that still exist in
+the new version of the upstream are copied to the output, while strings
+that are dropped upstream are omitted from the output, but are kept in
+a separate file for reference (sometimes only a string's identifier is changed,
+but can still be reused after re-identification). Additionally, strings that
+are newly introduced upstream are also copied in the output of the first stage,
+and simultaneously written to a separate file. This makes it easier to locate
+them and translate them.
+
+In the second step, strings that are introduced upstream, after being
+translated, are inserted back in the output from step one, over-writing their
+non-translated counterparts, thus producing the final result.
+"""
 
 ap = argparse.ArgumentParser()
 
-ap.add_argument("-c", "--catalogue",
-		action='store',
-		dest='catalogue_file',
-		default='en.json',
-		help="catalogue file")
+ap.add_argument("-c", "--catalogue", action='store', dest='catalogue_file', default='en.json',
+		help="The upstream new version of the strings catalogue.")
 
-ap.add_argument("-o", "--old",
-		action='store',
-		dest='old_locale_file',
-		default='ar.json',
-		help="old transltions file")
+ap.add_argument("-f", "--forked", action='store', dest='forked_locale_file', default='ar.json',
+		help="Forked translation file, containing the translations to be preserved across upstream releases.")
 
-ap.add_argument("-n", "--new",
-		action='store',
-		dest='new_locale_file',
-		default='new.ar.json',
-		help="new transltions file")
+ap.add_argument("-a", "--added", action='store', dest='added_strings_file', default='added.en.json',
+		help="File to write added untranslated strings to, or read added translated strings from.")
+
+ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', default='dropped.en.json',
+		help="File to write dropped strings to.")
+
+ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json',
+		help="Output file, content depends on the requested operation.")
 
 args = ap.parse_args()
 
 def transfer_localisation():
 	"""
-	1 load catalogue file's content into catalogue memory
-	2 load old localised file's content in the old locale memory
-	3 for each string in the catalogue_memory, append each matching string from old_locale_memory to the new locale memory, and remove both strings from the catalogue and old locale memories
-	4 write the new_locale_memory to new.locale
-	5 output the strings remaining in catalogue_memory to the new.base file
-	6 output the strings remaining in the old_locale_memory to the deleted.locale
-
+	1 load catalogue strings
+	2 load strings from the forked localisation
+	3 for each string in the catalogue, copy the matching string from the fork to the output, and remove the string from the catalogue.
+	4 write the output localisation memory to a file (carried over).
+	5 write the strings that remain in the catalogue memory to a file (new).
+	6 write the strings that remain in the forked localisation memory to a file (deleted).
 	"""
 
-##for the sake of simplification of code, English is the base and Arabic is old locale, hard-coded, until handling of arguments is added.
-
-	#read old locale strings from file into memory
-	print("Reading old locale file into memory")
-	with open(args.old_locale_file, 'r', encoding='utf-8') as old_locale_file:
-		old_locale_memory = json.load(old_locale_file, object_pairs_hook=OrderedDict)
-
-	#read catalogue strings from file into memory
-	print("Reading catalogue file into memory")
+	print("Reading catalogue from: ", args.catalogue_file)
 	with open(args.catalogue_file, 'r') as catalogue_file:
 		catalogue_memory = json.load(catalogue, object_pairs_hook=OrderedDict)
 
+	print("Reading forked localisation from: ", args.forked_locale_file)
+	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
+		forked_locale_memory = json.load(forked_locale_file, object_pairs_hook=OrderedDict)
+
+
 	#create the new locale memory.
-	new_locale_memory = OrderedDict()
+	output_memory = OrderedDict()
 
 	#create a memory to save strings in the catalogue that
 	# are missing from the old locale.
 	new_catalogue_memory = OrderedDict()
 
 	###
-	#copy the metadata to new_locale_memory from old_locale_memory.
+	#copy the metadata to output_memory from forked_locale_memory.
 	#if this is uncommented, then so must be the following block.
-	##new_locale_memory['@metadata'] = old_locale_memory.pop('@metadata')
+	##output_memory['@metadata'] = forked_locale_memory.pop('@metadata')
 
-	#remove metadata record from catalogue_memory, just to sync it with the old_locale_memory
+	#remove metadata record from catalogue_memory, just to sync it with the forked_locale_memory
 	#in order for the later copying through iteration to work.
-	#This is needed only if metadata is copied from old_locale_memory to new_locale_memory
-	#independently of the rest of the contents of the old_locale_memory.
+	#This is needed only if metadata is copied from forked_locale_memory to output_memory
+	#independently of the rest of the contents of the forked_locale_memory.
 	##try:
 	##	del catalogue_memory['@metadata']
 	##except KeyError:
@@ -81,50 +96,46 @@ def transfer_localisation():
 	print("Copying strings with id's existing in the catalouge, from old locale memory to new locale memory")
 	for string_id in catalogue_memory:
 		try:
-			new_locale_memory[string_id] = old_locale_memory.pop(string_id)
+			output_memory[string_id] = forked_locale_memory.pop(string_id)
 		except KeyError:
-		#a string is in catalogue but not in old localisation:
-			#so insert it in new localisation in its expected place
-			#in order to use later when merging
-			new_locale_memory[string_id] = catalogue_memory[string_id]
-			#and insert it in a separate memory too
-			new_catalogue_memory[string_id] = catalogue_memory[string_id]
-			print("A string found in catalogue that's missing from the old locale: ", string_id)
+			print("Found newly introduced string: ", string_id)
+			#..so insert it, untranslated, in ouput file at its
+			#expected location in order to use it later when merging.
+			output_memory[string_id] = catalogue_memory[string_id]
 
-	#write the new_locale_memory to disk in a JSON file
-	print("Writing localisation strings which are carried over to file")
-	with open(args.new_locale_file, 'w', encoding='utf-8') as new_locale_file:
-		json.dump(new_locale_memory, new_locale_file, ensure_ascii=False, indent='\t')
+			#and insert it in a separate memory of added strings too
+			#in order for translators to work on it.
+			added_strings_memory[string_id] = catalogue_memory[string_id]
 
-	#write the new_catalogue_memory to disk in a JSON file
-	print("Writing new strings from catalogue to file.")
-	with open("./tests/new.en.json", 'w', encoding='utf-8') as new_catalogue:
-		json.dump(new_catalogue_memory, new_catalogue, ensure_ascii=False, indent='\t')
+	print("Writing strings which are carried over to file: ", args.output_file)
+	with open(args.output_file, 'w', encoding='utf-8') as output_file:
+		json.dump(output_memory, output_file, ensure_ascii=False, indent='\t')
 
-	#write what remains in old_locale_memory to disk in a JSON file
-	print("Writing left-over localisation strings to file")
-	with open("./tests/del.ar.json", 'w', encoding='utf-8') as del_locale:
-		json.dump(old_locale_memory, del_locale, ensure_ascii=False, indent='\t')
+	print("Writing newly introduced strings to file: ", args.added_strings_file)
+	with open(args.added_strings_file, 'w', encoding='utf-8') as added_strings_file:
+		json.dump(added_strings_memory, new_catalogue, ensure_ascii=False, indent='\t')
+
+	print("Writing dropped strings to file: ", args.dropped_strings_file)
+	with open(args.dropped_strings_file, 'w', encoding='utf-8') as dropped_strings_file:
+		json.dump(forked_locale_memory, dropped_strings_file, ensure_ascii=False, indent='\t')
 
 def merge_localisation():
 	"""
-	Merges new_strings_file with base_locale_file
+	Merges added strings into forked localisation.
+
 	"""
-	#read new strings strings from file into memory
-	print("Reading new strings' file from " + args.new_strings_file + " into memory.")
-	with open(args.new_strings_file, 'r', encoding='utf-8') as new_strings_file:
-		new_strings_memory = json.load(new_strings_file, object_pairs_hook=OrderedDict)
+	print("Reading forked localisation from: ", args.forked_locale_file)
+	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
+		forked_locale_memory = json.load(forked_locale_file, object_pairs_hook=OrderedDict)
 
-	#read base locale strings from file into memory
-	print("Reading locale base string from " + args.locale_base_file + " into memory.")
-	with open(args.locale_base_file, 'r') as locale_base_file:
-		locale_base_memory = json.load(locale_base_file, object_pairs_hook=OrderedDict)
+	print("Reading added strings from: ", args.added_strings_file)
+	with open(args.added_strings_file, 'r', encoding='utf-8') as added_strings_file:
+		added_strings_memory = json.load(added_strings_file, object_pairs_hook=OrderedDict)
 
-	for string_id in new_strings_memory:
-		locale_base_memory[string_id] = new_strings_memory[string_id]
+	for string_id in added_strings_memory:
+		forked_locale_memory[string_id] = added_strings_memory[string_id]
 
-	#write the merged_locale_memory to disk in a JSON file
-	print("Writing merged localisation strings which to file: " + args.locale_merged_file)
-	with open(args.locale_merged_file, 'w', encoding='utf-8') as locale_merged_file:
-		json.dump(locale_base_memory, locale_merged_file, ensure_ascii=False, indent='\t')
+	print("Writing merged localisation strings to file: ", args.output_file)
+	with open(args.output_file, 'w', encoding='utf-8') as output_file:
+		json.dump(forked_locale_memory, output_file, ensure_ascii=False, indent='\t')
 
