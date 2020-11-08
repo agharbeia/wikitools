@@ -4,24 +4,23 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 } # Protect against web entry
 
 \$wgSitename = "$WIKI_TITLE";
-\$wgMetaNamespace = "ويكي";
+\$wgMetaNamespace = 'ويكي';
 
 
 #== Server ==
 \$wgServer = "https://$WIKI_FQDN";
 \$wgEmergencyContact = "webmaster@$APEX";
 \$wgPasswordSender = "robot@$WIKI_FQDN";
-\$wgScriptPath = "/$MW_INSTANCE_DIR";
+\$wgScriptPath = '/$MW_INSTANCE_DIR';
 \$wgResourceBasePath = \$wgScriptPath;
 
-\$wgLogo = "$URL_PREFIX/Special:Filepath/logo.svg";
+\$wgLogo = '$URL_PREFIX/Special:Filepath/logo.svg';
 \$wgEnableEmail = true;
 
 #=== Locale and languages ===
-\$wgShellLocale = "ar_EG.UTF-8";
+\$wgShellLocale = 'ar_EG.UTF-8';
 
-# Site language code, should be one of the list in ./languages/Names.php
-\$wgLanguageCode = "ar";
+\$wgLanguageCode = 'ar';
 \$wgTranslateNumerals = false;
 \$wgPageLanguageUseDB = true;
 	\$wgGroupPermissions['autoconfirmed']['pagelang'] = true;
@@ -29,15 +28,15 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 #=== Secrets ===
 ## The followiong file contain secret information necessary
 ## to the operation of this wiki, which is kept out of the webroot.
-require_once( "$SECRETS_DIR/$WIKI_FQDN" );
+require_once( '$SECRETS_DIR/$WIKI_FQDN' );
 
 #=== Database ===
-\$wgDBtype = "mysql";
-\$wgDBserver = "localhost";
-\$wgDBname = "$DB_NAME";
-\$wgDBuser = "$DB_USER";
+\$wgDBtype = 'mysql';
+\$wgDBserver = 'localhost';
+\$wgDBname = '$DB_NAME';
+\$wgDBuser = '$DB_USER';
 /*\$wgDBpassword       = //defined in the secrets file included from this file */
-\$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
+\$wgDBTableOptions = 'ENGINE=InnoDB, DEFAULT CHARSET=binary';
 
 #=== Action Paths ===
 \$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
@@ -51,19 +50,16 @@ foreach ( \$actions as \$action ) {
 
 #== File uploads ==
 \$wgEnableUploads  = true;
-\$wgUploadDirectory = "$REPOSITORY_DIR";
-\$wgUploadPath	= "/$REPO_ALIAS";
+\$wgUploadDirectory = '$REPOSITORY_DIR';
+\$wgUploadPath	= '/$REPO_ALIAS';
 \$wgUseImageMagick = true;
-\$wgImageMagickConvertCommand = "/usr/bin/convert";
-\$wgAllowUserJs = true;
-\$wgAllowUserCss = true;
+\$wgImageMagickConvertCommand = '/usr/bin/convert';
 \$wgAllowCopyUploads = true;
 	\$wgGroupPermissions['autoconfirmed']['upload_by_url'] = true;
 \$wgCopyUploadsFromSpecialUpload = true;
 \$wgUseInstantCommons = true;
 \$wgAllowTitlesInSVG = true;
 \$wgTiffThumbnailType = [ 'jpg', 'image/jpeg' ];
-\$wgUseInstantCommons  = true;
 \$wgFileExtensions = [
 #graphics:
 'png', 'gif', 'jpg', 'jpeg', 'svg',  'tiff', 'tif', 'xcf', 'ora',
@@ -80,11 +76,11 @@ foreach ( \$actions as \$action ) {
 
 #== Shared memory ==
 \$wgMainCacheType  = CACHE_ACCEL;
-\$wgCacheDirectory = "$CACHE_DIR";
+\$wgCacheDirectory = '$CACHE_DIR';
 /*\$wgFileCacheDirectory = \$wgCacheDirectory;
 \$wgUseFileCache = false;*/	//buggy: T26575:purging is faulty & T148684:UTF-8 names suffer.
 \$wgUseGzip = true;
-\$wgTmpDirectory = "$TEMP_DIR";
+\$wgTmpDirectory = '$TEMP_DIR';
 
 
 #== Permissions and exposure ==
@@ -101,6 +97,9 @@ foreach ( \$actions as \$action ) {
 
 \$wgUseRCPatrol = false;
 
+\$wgAllowUserJs = true;
+\$wgAllowUserCss = true;
+
 #=== other settings and default user options
 \$wgEmailConfirmToEdit = true;	//conflict with Extension:InviteSignup
 \$wgEmailAuthentication = true;
@@ -108,26 +107,26 @@ foreach ( \$actions as \$action ) {
 \$wgEnableUserEmail	= true; # UPO
 \$wgEnotifUserTalk	= true; # UPO
 \$wgEnotifWatchlist	= true; # UPO
-\$wgDefaultUserOptions['timecorrection'] = "Africa/Cairo";
+\$wgDefaultUserOptions['timecorrection'] = 'Africa/Cairo';
 \$wgDefaultUserOptions['previewonfirst'] = true;
 \$wgDefaultUserOptions['forceeditsummary'] = true;
 
 
 #== Web policies ==
 \$wgNoFollowLinks = false;
-\$wgReferrerPolicy="origin-when-crossorigin";
+\$wgReferrerPolicy='origin-when-crossorigin';
 
 
 #== Credits and licensing ==
 ## License and Creative Commons licenses are supported so far.
-\$wgRightsPage = "ويكي:عن";
-\$wgRightsUrl  = "https://creativecommons.org/licenses/by-sa/4.0/deed.ar";
-\$wgRightsText = "برخصة المشاع الإبداعي: النسبة-المشاركةبالمثل";
+\$wgRightsPage = 'ويكي:عن';
+\$wgRightsUrl  = 'https://creativecommons.org/licenses/by-sa/4.0/deed.ar';
+\$wgRightsText = 'برخصة المشاع الإبداعي: النسبة-المشاركةبالمثل';
 \$wgRightsIcon = "\$wgResourceBasePath/resources/assets/licenses/cc-by-sa.png";
 
 
 #== Appearance ==
-\$wgDefaultSkin	= "Vector";
+\$wgDefaultSkin	= 'Vector';
 wfLoadSkin( 'Timeless' );
 wfLoadSkin( 'MonoBook' );
 wfLoadSkin( 'Vector' );
@@ -137,21 +136,24 @@ wfLoadSkin( 'Vector' );
 \$wgEnableScaryTranscluding = true;
 \$wgUseETag		= true;
 \$wgPingback = true;
-\$wgDiff3 = "/usr/bin/diff3";
+\$wgDiff3 = '/usr/bin/diff3';
 \$wgFixDoubleRedirects = true;
 \$wgMaxCredits = 8;
 //\$wgLocalInterwikis = [''];
-\$wgCategoryCollation="numeric";
+\$wgCategoryCollation='numeric';
+
+define('wdoWikiRoot', realpath(__DIR__));
+
 
 #== Extensions ==
 #Non-critical extensions are activated in a separate files
 # for better managability
-//require_once( realpath(__DIR__)."/Extensions.conf" );
+//require_once( wdoWikiRoot . '/Extensions.conf' );
 
 #== Namespaces ==
 # Custom Namespace definitions and namespace-related settings for standard ones.
 # This better be included after Extensions.conf since some settings need to take effect after some extensions have been loaded.
-//require_once( realpath(__DIR__)."/Namespaces.conf" );
+//require_once( wdoWikiRoot . '/Namespaces.conf' );
 
 
 #=== Debugging ===
