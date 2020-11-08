@@ -28,7 +28,7 @@ def main(args):
 		
 		print('\tDownloading from ' + bundle_URL)
 		print('\t' + ('…and extracting the bundle' if not args.no_extract else '') + ' to ' + args.target_dir)
-		os.system('wget --continue' + (' --output-document - ' if not args.no_extract else ' --directory-prefix={} '.format(args.target_dir)) + bundle_URL + ('' if args.no_extract else ' | tar --directory={} --extract --file=- --gunzip'.format(args.target_dir)) + ' && mv {0}/{1} {0}/{2}'.format(args.target_dir, extension, match.group('bundle')))
+		os.system('wget --continue' + (' --output-document - ' if not args.no_extract else ' --directory-prefix={} '.format(args.target_dir)) + bundle_URL + ('' if args.no_extract else ' | tar --directory={} --extract --file=- --gunzip'.format(args.target_dir) + ' && mv {0}/{1} {0}/{2}'.format(args.target_dir, extension, match.group('bundle'))))
 ## end main
 
 ap = argparse.ArgumentParser(description=help_text, epilog='By Ahmad Gharbeia, November 2020; Under GPL 3.0 license')
