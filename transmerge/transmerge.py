@@ -107,15 +107,15 @@ def transfer_localisation():
 
 	print("Writing strings which are carried over to file: ", args.output_file)
 #	with open(args.output_file, 'w', encoding='utf-8') as output_file:
-	json.dump(output_memory, output_file, ensure_ascii=False, indent='\t')
+	json.dump(output_memory, args.output_file, ensure_ascii=False, indent='\t')
 
 	print("Writing newly introduced strings to file: ", args.added_strings_file)
 #	with open(args.added_strings_file, 'w', encoding='utf-8') as added_strings_file:
-	json.dump(added_strings_memory, added_strings_file, ensure_ascii=False, indent='\t')
+	json.dump(added_strings_memory, args.added_strings_file, ensure_ascii=False, indent='\t')
 
 	print("Writing dropped strings to file: ", args.dropped_strings_file)
 #	with open(args.dropped_strings_file, 'w', encoding='utf-8') as dropped_strings_file:
-	json.dump(forked_locale_memory, dropped_strings_file, ensure_ascii=False, indent='\t')
+	json.dump(forked_locale_memory, args.dropped_strings_file, ensure_ascii=False, indent='\t')
 
 
 def merge_localisation():
@@ -125,18 +125,18 @@ def merge_localisation():
 	"""
 	print("Reading forked localisation from: ", args.forked_locale_file)
 #	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
-	forked_locale_memory = json.load(forked_locale_file, object_pairs_hook=OrderedDict)
+	forked_locale_memory = json.load(args.forked_locale_file, object_pairs_hook=OrderedDict)
 
 	print("Reading added strings from: ", args.added_strings_file)
 #	with open(args.added_strings_file, 'r', encoding='utf-8') as added_strings_file:
-	added_strings_memory = json.load(added_strings_file, object_pairs_hook=OrderedDict)
+	added_strings_memory = json.load(args.added_strings_file, object_pairs_hook=OrderedDict)
 
 	for string_id in added_strings_memory:
 		forked_locale_memory[string_id] = added_strings_memory[string_id]
 
 	print("Writing merged localisation strings to file: ", args.output_file)
 #	with open(args.output_file, 'w', encoding='utf-8') as output_file:
-	json.dump(forked_locale_memory, output_file, ensure_ascii=False, indent='\t')
+	json.dump(forked_locale_memory, args.output_file, ensure_ascii=False, indent='\t')
 
 args = ap.parse_args()
 
