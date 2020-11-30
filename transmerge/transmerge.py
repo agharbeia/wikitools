@@ -46,7 +46,7 @@ ap.add_argument("-a", "--added", action='store', dest='added_strings_file', defa
 ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', default='dropped.en.json', type=argparse.FileType('w'),
 		help="File to write dropped strings to.")
 
-ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json', type=argparse.FileType('w')
+ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json', type=argparse.FileType('w'),
 		help="Output file, content depends on the requested operation.")
 
 def transfer_localisation():
