@@ -8,28 +8,28 @@ from collections import OrderedDict
 help_text = """
 A tool to maintain a forked localisation, with regard to an updated catalogue.
 
-It is used to merge a localisation that is different from that released by
-the upstream localisers into the corresponding newer upstream localisation
-while keeping the differences from the fork, and accounting for the addition
-and deletion of strings.
+It is used to merge a forked localisation that is different from the one
+released by the upstream localisers into the corresponding newer upstream
+localisation while saving the differences from the fork, and accounting for
+the addition and deletion of strings.
 
 The procedure is two-step: first a localisation file is produced that has the
 forked localisation and any strings added in the newer release from upstream,
-untranslated.
+untranslated, as detailed later below.
 In a later step, after the added strings have been translated, they are
 merged back in the final localisation file.
 
-In the first step, strings from the forked localisation that still exist in
+In the first step, strings from the forked localisation that are still used in
 the new version of the upstream are copied to the output, while strings
-that are dropped upstream are omitted from the output, but are kept in
+that are dropped from upstream are omitted from the output, but are kept in
 a separate file for reference (sometimes only a string's identifier is changed,
 but can still be reused after re-identification). Additionally, strings that
-are newly introduced upstream are also copied in the output of the first stage,
+are newly introduced upstream are also copied in the output of this stage,
 and simultaneously written to a separate file. This makes it easier to locate
-them and translate them.
+them, in order to translate them, or to compare to upstream localisation.
 
-In the second step, strings that are introduced upstream, after being
-translated, are inserted back in the output from step one, over-writing their
+In the second step, strings that are introduced upstream, after havong been
+translated, are inserted back in the output of step one, over-writing their
 non-translated counterparts, thus producing the final result.
 """
 
@@ -54,11 +54,11 @@ args = ap.parse_args()
 
 def transfer_localisation():
 	"""
-	1 load catalogue strings
+	1 load strings from catalogue
 	2 load strings from the forked localisation
 	3 for each string in the catalogue, copy the matching string from the fork to the output, and remove the string from the catalogue.
-	4 write the output localisation memory to a file (carried over).
-	5 write the strings that remain in the catalogue memory to a file (new).
+	4 write the output localisation memory to a file (carried over strings).
+	5 write the strings that remain in the catalogue memory to a file (newly added).
 	6 write the strings that remain in the forked localisation memory to a file (deleted).
 	"""
 
@@ -121,7 +121,7 @@ def transfer_localisation():
 
 def merge_localisation():
 	"""
-	Merges added strings into forked localisation.
+	Merges added strings, after having been translated, into forked localisation.
 
 	"""
 	print("Reading forked localisation from: ", args.forked_locale_file)
