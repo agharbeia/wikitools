@@ -34,7 +34,7 @@ non-translated counterparts, thus producing the final result.
 
 ap = argparse.ArgumentParser()
 
-ap.add_argument("-c", "--catalogue", action='store', dest='catalogue_file', default='en.json', type=argparse.FileType('r', encoding='utf-8')
+ap.add_argument("-c", "--catalogue", action='store', dest='catalogue_file', default='en.json', type=argparse.FileType('r', encoding='utf-8'),
 		help="The upstream new version of the strings catalogue.")
 
 ap.add_argument("-f", "--forked", action='store', dest='forked_locale_file', default='ar.json', type=argparse.FileType('r', encoding='utf-8'),
