@@ -61,11 +61,11 @@ def transfer_localisation():
 
 	print("Reading catalogue from: ", args.catalogue_file)
 #	with open(args.catalogue_file, 'r') as catalogue_file:
-	catalogue_memory = json.load(catalogue_file, object_pairs_hook=OrderedDict)
+	catalogue_memory = json.load(args.catalogue_file, object_pairs_hook=OrderedDict)
 
 	print("Reading forked localisation from: ", args.forked_locale_file)
 #	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
-	forked_locale_memory = json.load(forked_locale_file, object_pairs_hook=OrderedDict)
+	forked_locale_memory = json.load(args.forked_locale_file, object_pairs_hook=OrderedDict)
 
 
 	#create the new locale memory.
