@@ -37,16 +37,16 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--catalogue", action='store', dest='catalogue_file', default='en.json',
 		help="The upstream new version of the strings catalogue.")
 
-ap.add_argument("-f", "--forked", action='store', dest='forked_locale_file', default='ar.json', type=argparse.FileType('r'),
+ap.add_argument("-f", "--forked", action='store', dest='forked_locale_file', default='ar.json', type=argparse.FileType('r', encoding='utf-8'),
 		help="Forked translation file, containing the translations to be preserved across upstream releases.")
 
 ap.add_argument("-a", "--added", action='store', dest='added_strings_file', default='added.en.json',
 		help="File to write added untranslated strings to, or read added translated strings from.")
 
-ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', default='dropped.en.json', type=argparse.FileType('w'),
+ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', default='dropped.en.json', type=argparse.FileType('w', encoding='utf-8'),
 		help="File to write dropped strings to.")
 
-ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json', type=argparse.FileType('w'),
+ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json', type=argparse.FileType('w', encoding='utf-8'),
 		help="Output file, content depends on the requested operation.")
 
 def transfer_localisation():
@@ -60,12 +60,12 @@ def transfer_localisation():
 	"""
 
 	print("Reading catalogue from: ", args.catalogue_file)
-	with open(args.catalogue_file, 'r') as catalogue_file:
-		catalogue_memory = json.load(catalogue_file, object_pairs_hook=OrderedDict)
+#	with open(args.catalogue_file, 'r') as catalogue_file:
+	catalogue_memory = json.load(catalogue_file, object_pairs_hook=OrderedDict)
 
 	print("Reading forked localisation from: ", args.forked_locale_file)
-	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
-		forked_locale_memory = json.load(forked_locale_file, object_pairs_hook=OrderedDict)
+#	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
+	forked_locale_memory = json.load(forked_locale_file, object_pairs_hook=OrderedDict)
 
 
 	#create the new locale memory.
