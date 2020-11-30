@@ -49,8 +49,6 @@ ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', 
 ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json', type=argparse.FileType('w')
 		help="Output file, content depends on the requested operation.")
 
-args = ap.parse_args()
-
 def transfer_localisation():
 	"""
 	1 load strings from catalogue file
@@ -75,7 +73,7 @@ def transfer_localisation():
 
 	#create a memory to save strings in the catalogue that
 	# do not exist in the fork.
-	new_catalogue_memory = OrderedDict()
+	added_strings_memory = OrderedDict()
 
 	###
 	#copy the metadata to output_memory from forked_locale_memory.
@@ -112,7 +110,7 @@ def transfer_localisation():
 
 	print("Writing newly introduced strings to file: ", args.added_strings_file)
 	with open(args.added_strings_file, 'w', encoding='utf-8') as added_strings_file:
-		json.dump(added_strings_memory, new_catalogue, ensure_ascii=False, indent='\t')
+		json.dump(added_strings_memory, added_strings_file, ensure_ascii=False, indent='\t')
 
 	print("Writing dropped strings to file: ", args.dropped_strings_file)
 	with open(args.dropped_strings_file, 'w', encoding='utf-8') as dropped_strings_file:
@@ -138,3 +136,6 @@ def merge_localisation():
 	with open(args.output_file, 'w', encoding='utf-8') as output_file:
 		json.dump(forked_locale_memory, output_file, ensure_ascii=False, indent='\t')
 
+args = ap.parse_args()
+
+transfer_localisation()
