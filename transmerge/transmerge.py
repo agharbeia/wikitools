@@ -8,10 +8,9 @@ from collections import OrderedDict
 help_text = """
 A tool to maintain a forked localisation, with regard to an updated catalogue.
 
-It is used to merge a forked localisation that is different from the one
-released by the upstream localisers into the corresponding newer upstream
-localisation while saving the differences from the fork, and accounting for
-the addition and deletion of strings.
+It is used to facilitate the updating of a forked localisation that is
+different from the one released by the upstream localisers while saving the
+differences from the fork, and accounting for the addition and deletion of strings.
 
 The procedure is two-step: first a localisation file is produced that has the
 forked localisation and any strings added in the newer release from upstream,
@@ -38,25 +37,25 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--catalogue", action='store', dest='catalogue_file', default='en.json',
 		help="The upstream new version of the strings catalogue.")
 
-ap.add_argument("-f", "--forked", action='store', dest='forked_locale_file', default='ar.json',
+ap.add_argument("-f", "--forked", action='store', dest='forked_locale_file', default='ar.json', type=argparse.FileType('r'),
 		help="Forked translation file, containing the translations to be preserved across upstream releases.")
 
 ap.add_argument("-a", "--added", action='store', dest='added_strings_file', default='added.en.json',
 		help="File to write added untranslated strings to, or read added translated strings from.")
 
-ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', default='dropped.en.json',
+ap.add_argument("-d", "--dropped", action='store', dest='dropped_strings_file', default='dropped.en.json', type=argparse.FileType('w'),
 		help="File to write dropped strings to.")
 
-ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json',
+ap.add_argument("-o", "--ouput", action='store', dest='output_file', default='output.ar.json', type=argparse.FileType('w')
 		help="Output file, content depends on the requested operation.")
 
 args = ap.parse_args()
 
 def transfer_localisation():
 	"""
-	1 load strings from catalogue
-	2 load strings from the forked localisation
-	3 for each string in the catalogue, copy the matching string from the fork to the output, and remove the string from the catalogue.
+	1 load strings from catalogue file
+	2 load strings from the forked localisation file
+	3 for each string in the catalogue, copy the matching strings from the fork to the output along with newly introduced strings, and remove the string from the catalogue.
 	4 write the output localisation memory to a file (carried over strings).
 	5 write the strings that remain in the catalogue memory to a file (newly added).
 	6 write the strings that remain in the forked localisation memory to a file (deleted).
@@ -64,7 +63,7 @@ def transfer_localisation():
 
 	print("Reading catalogue from: ", args.catalogue_file)
 	with open(args.catalogue_file, 'r') as catalogue_file:
-		catalogue_memory = json.load(catalogue, object_pairs_hook=OrderedDict)
+		catalogue_memory = json.load(catalogue_file, object_pairs_hook=OrderedDict)
 
 	print("Reading forked localisation from: ", args.forked_locale_file)
 	with open(args.forked_locale_file, 'r', encoding='utf-8') as forked_locale_file:
@@ -75,7 +74,7 @@ def transfer_localisation():
 	output_memory = OrderedDict()
 
 	#create a memory to save strings in the catalogue that
-	# are missing from the old locale.
+	# do not exist in the fork.
 	new_catalogue_memory = OrderedDict()
 
 	###
@@ -93,7 +92,7 @@ def transfer_localisation():
 	##	print("Catalogue file contains no metadata")
 	###
 
-	print("Copying strings with id's existing in the catalouge, from old locale memory to new locale memory")
+	print("Copying carried over strings from old locale memory to new locale memory")
 	for string_id in catalogue_memory:
 		try:
 			output_memory[string_id] = forked_locale_memory.pop(string_id)
