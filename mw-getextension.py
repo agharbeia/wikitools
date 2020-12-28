@@ -21,7 +21,8 @@ def main(args):
 	for extension in args.extension:
 		print('Processing requested extension', extension)
 
-		if args.verbose: print(f'\tFetching page at: {Distributor_URL}?extdistname={Style.BRIGHT}{extension}{Style.RESET_ALL}&extdistversion=REL{Style.BRIGHT}{ver_id}{Style.RESET_ALL}')
+		if args.verbose: print(f"\tFetching page at: {Distributor_URL}?extdistname={Style.BRIGHT}{extension}{Style.RESET_ALL}&extdistversion=REL{Style.BRIGHT}{ver_id}{Style.RESET_ALL}")
+		
 		html = urlopen(Distributor_URL + '?extdistname=' + extension + '&extdistversion=REL' + ver_id).read().decode()
 
 		regex = 'https:\/\/extdist\.wmflabs\.org\/dist\/extensions\/(?P<bundle>' + extension + '-REL' + ver_id + '-\w{7})\.tar\.gz'
