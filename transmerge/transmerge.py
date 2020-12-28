@@ -12,11 +12,13 @@ ap.add_argument('--version', action='version', version='%(prog)s 0.7')
 
 help_text = """
 Terminology:
-* Base file: A JSON structure containing a localisation resource that is
-being maintained separately from the one from the upstream.
-* Catalogue file: a JSON structure containing a localisation resource from
-the upstream, possibly containing changes, additions and omissions
-in the strings, as well as changes in the string id's.
+* Base translation: A JSON structure containing a localisation resource that
+is being maintained separately from the one from the upstream.
+* Catalogue: a JSON structure containing a localisation resource from
+the upstream in the source language, possibly containing changes, additions
+and omissions in the strings, as well as changes in the string id's.
+* Old catalogue: the version of the catalogue from which the base translation
+is derived.
 
 The aim is to produce a base localisation resource that is updated such as that:
 * strings introduced upstream are inserted.
@@ -58,8 +60,10 @@ This is intended to guarantee the ordering of the strings, and that no
 artefacts are introduced.
 """
 ap0 = argparse.ArgumentParser(add_help=False, description='Common, required arguments.')
+
 ap0.add_argument('base', metavar='BASE', default=sys.stdin, type=argparse.FileType('r', encoding='utf-8'),
 		help='Filename from which to read base translation resource. It should contain the translations to be preserved across upstream releases. This will not be modified.')
+
 ap0.add_argument('updated', metavar='UPDATED', default=sys.stdout, type=argparse.FileType('w', encoding='utf-8'),
 		help='Filename to write updated base to.')
 
@@ -91,90 +95,107 @@ patchcommand = commands.add_parser('patch', parents=[ap0], description="""
 	The strings' identifiers from the patch must be already existing in the base,
 	otherwise an exception is thrown.
 """,
-help='Merges strings from a localisation resource into another.')
+	help='Merges strings from a localisation resource into another.')
+
+patchcommand.add_argument('--patch', required=True, dest='patch_file', type=argparse.FileType('r', encoding='utf-8'),
+		help='Localisation string, modified somehow, to patch the base with. This will not be modified.')
 
 
 def sieve(args):
-	UNSYNCHED_ERROR = "The {} and the {} seem to be out of sync!\nA string id in the first was not found in the latter.\nThe base localisation file could be in an inconsistent state."
 	
-	print("Reading catalogue from: ", args.catalogue_file)
+	print('Reading catalogue from: ', args.catalogue_file.name)
 	catalogue = json.load(args.catalogue_file, object_pairs_hook=OrderedDict)
+	print(len(catalogue), 'strings read.')
 
-	print("Reading base localisation from: ", args.base_file)
+	print('Reading base localisation from: ', args.base.name)
 	base = json.load(args.base, object_pairs_hook=OrderedDict)
+	print(len(base), 'strings read.')
 
-	print("Reading old catalogue from: ", args.old_catalogue_file)
-	old_catalogue = json.load(args.old_catalogue_file, object_pairs_hook=OrderedDict)
+	print('Reading old catalogue from: ', args.old_catalogue_file.name)
+	old_catalogue = json.load(args.old_catalogue_file)
+	print(len(old_catalogue), 'strings read.')
 
-
-	updated_base = OrderedDict()
+	print ("Reading of inputs completed.")
+	
+	updated = OrderedDict()
 	added_strings = OrderedDict()
 	changed_strings =  OrderedDict()
 
 	###
-	#copy the metadata to updated_base from base.
+	#copy the metadata to updated base from base.
 	#if this is uncommented, then so must be the following block.
-	##updated_base['@metadata'] = base.pop('@metadata')
+	try:
+		print("Copying metadata from base.")
+		updated['@metadata'] = base.pop('@metadata')
+	except KeyError:
+		print("Base contains no metadata!")
 
 	#remove metadata record from catalogue, just to sync it with the base
 	#in order for the later copying through iteration to work.
-	#This is needed only if metadata is copied from base to updated_base
+	#This is needed only if metadata is copied from base to updated base
 	#independently of the rest of the contents of the base.
-	##try:
-	##	del catalogue['@metadata']
-	##except KeyError:
-	##	print("Catalogue file contains no metadata")
-	###
+	try:
+		del catalogue['@metadata']
+	except KeyError:
+		print("Catalogue contains no metadata!")
 
 	print("Starting sieving strings; added, dropped and changed.")
 	for string_id in catalogue :
+		newStringFound = False
 		if (string_id in base):	#Is this id carried over?
-			#Yes. Copy its translated string:
-			updated_base[string_id] = base.pop(string_id)		
+			#Yes. Migrate its translated string:
+			updated[string_id] = base.pop(string_id)
 			
-			try:
-				#Has the string has been changed between upstream releases?
-				if not (catalogue[string_id] == old_catalogue[string_id]):
-					#Yes. So also save its source string for review.
-					changed_strings[string_id] = catalogue[string_id]
-			except KeyError:
-				print(UNSYNCHED_ERROR.format('base', 'old catalogue'))
+			#Has the source string been changed between upstream releases?
+			if ((string_id in old_catalogue) and (not catalogue[string_id] == old_catalogue[string_id])):
+				#Yes. So also save its source string for review.
+				print(f"String with id: '{string_id}' was changed.")
+				changed_strings[string_id] = catalogue[string_id]
+			#else: It either hasn't changed, or it didn't exist in the version of
+			#old catalogue we're looking at, which means the base translation
+			#is out of synch with the old catalogue. Either way, we do not care.
 				
-		else:	#No. It seems to be a new string.
-			#Check for a change in id with unchanged string
-			#by comparing with strings from the older catalogue.
-			for old_id in old_catalogue :
-				if (old_catalogue[old_id] == catalogue[string_id]):
-					print(f"A string is found with different id: '{old_id}' ⇒ '{string_id}'.")
-					#This string is found in the old catalogue.
-					Print("It either has its id changed, or it's new but repeated.")
-					#Anyhow, save its translation with the new id in the updated base.
-					try:
-						updated_base[string_id] = base.pop[old_id]
-					except KeyError:
-						print(UNSYNCHED_ERROR.format('old catalogue', 'base'))
-				else:
-					print("Found newly introduced string: ", string_id)
-					#..so insert it, untranslated, in updated base at its
-					updated_base[string_id] = catalogue[string_id]
+		else:	#No. It seems to be a new string (as far as the base is concerned).
+			#Must now check whether the string existed in the old catalogue
+			#with a different id.
+			if (not string_id in old_catalogue):
+				for old_id in old_catalogue :
+					if ((catalogue[string_id] == old_catalogue[old_id]) and (not old_id in catalogue)) :
+						#This string is found in the old catalogue but with a different id.
+						print(f"A string is found with different id: '{old_id}' ⇒ '{string_id}'.")
+						if (old_id in base):
+							#Save its existing translation to the updated base, with the new id.
+							updated[string_id] = base.pop(old_id)
+						else:
+							newStringFound = True;
+							#knowing that base is not in sync with old catalogue. But we do not care.
+						break #Stop the search,.either way.
+			else:
+				newStringFound = True;
+		
+		if newStringFound :
+			#Id existed in old catalogue but not in base, so it is new:
+			print("Found newly introduced string: ", string_id)
+			#..so insert it, untranslated, in updated base at its order
+			updated[string_id] = catalogue[string_id]
 
-					#..and insert it in a separate dictionary of added strings too
-					#in order for translators to work on it.
-					added_strings[string_id] = catalogue[string_id]
+			#..and insert it in a separate dictionary of added strings too
+			#in order for translators to work on it.
+			added_strings[string_id] = catalogue[string_id]
 	
 	print("Sieving strings completed.")		
 	#..now what remains in base dictionary are dropped strings.			
 	
-	print(f"Writing {updated_base.len()} carried-over strings to updated base file {args.updated}")
-	json.dump(updated_base, args.updated_base_file, ensure_ascii=False, indent='\t')
+	print(f"Writing {len(updated)} carried-over and added strings to {args.updated.name}")
+	json.dump(updated, args.updated, ensure_ascii=False, indent='\t')
 
-	print(f"Writing {added_strings.len()} newly added strings to file {args.added_strings_file}")
+	print(f"Writing {len(added_strings)} newly added strings to {args.added_strings_file.name}")
 	json.dump(added_strings, args.added_strings_file, ensure_ascii=False, indent='\t')
 
-	print(f"Writing {base.len()} dropped strings to file {args.dropped_strings_file}")
+	print(f"Writing {len(base)} dropped strings to {args.dropped_strings_file.name}")
 	json.dump(base, args.dropped_strings_file, ensure_ascii=False, indent='\t')
 	
-	print(f"Writing {changed_strings.len()} changed catalogue strings file {args.changed_strings_file}")
+	print(f"Writing {len(changed_strings)} changed catalogue strings to {args.changed_strings_file.name}")
 	json.dump(changed_strings, args.changed_strings_file, ensure_ascii=False, indent='\t')
 
 
@@ -183,7 +204,7 @@ def patch(args):
 	base = json.load(args.base_file, object_pairs_hook=OrderedDict)
 
 	print('Reading patch from: ', args.patch_file)
-	patch = json.load(args.patch_file, object_pairs_hook=OrderedDict)
+	patch = json.load(args.patch_file)
 
 	try:
 		for string_id in patch :
@@ -191,7 +212,7 @@ def patch(args):
 	except KeyError:
 		raise SystemExit('The patch contains a string with an id which does not exist in base. Aborting.')
 	else:
-		print('Writing patched localisation file to: ', args.updated)
+		print('Writing patched localisation to: ', args.updated)
 		json.dump(base, args.updated, ensure_ascii=False, indent='\t')
 
 try:
