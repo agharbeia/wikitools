@@ -10,42 +10,42 @@ ap = argparse.ArgumentParser(
 )
 ap.add_argument('--version', action='version', version='%(prog)s 0.7')
 
-help_text = """
+long_story = """
 Terminology:
-* Base translation: A JSON structure containing a localisation resource that
-is being maintained separately from the one from the upstream.
-* Catalogue: a JSON structure containing a localisation resource from
-the upstream in the source language, possibly containing changes, additions
-and omissions in the strings, as well as changes in the string id's.
-* Old catalogue: the version of the catalogue from which the base translation
-is derived.
+	* Base translation: A JSON structure containing a localisation resource
+	  that is being maintained separately from the one from the upstream.
+	* Catalogue: a JSON structure containing a localisation resource from
+	  the upstream in the source language, possibly containing changes,
+	  additions and omissions in the strings, as well as changes in the string id's.
+	* Old catalogue: the version of the catalogue from which the base
+	  translation is derived.
 
 The aim is to produce a base localisation resource that is updated such as that:
-* strings introduced upstream are inserted.
-* strings removed upstream are removed, saved aside for review,
-while preserving the order of strings.
+	* strings introduced upstream are inserted.
+	* strings removed upstream are removed, saved aside for review,
+	  while preserving the order of strings.
 
 The procedure is comprised of two steps, namely: Sieve and Patch.
 
 Step one: Sieve, has three inputs: base, catalogue, and old catalogue,
 and results in the following four outputs:
-*	An updated base that is comprised of the base, incorporating the
-	strings that were newly introduced upstream, as identified by their
-	id's, untranslated, in addition to updating the identifiers that
-	have been changed.
-*	A plus-diff comprise of only the strings that have been newly
-	introduced upstream. These need to be translated.
-*	A minus-diff comprised of only the strings that were omitted upstream.
-	These are preserved for review.
-*	A delta-diff comprised of strings from the catalogue that were changed
-	between its release, and the older release from which the base
-	localisation is derived.
-	These need to be reviewed in order to determine whether the changes are
-	significant, and as such worthy of updating the corresponding translations.
-	For example, if the base before being processed is derived from
-	version 1.31 of the upstream catalogue, and the catalogue is from
-	version 1.35, then the delta-diff will contain strings whose id's exist
-	in both versions but which content have been changed.
+	* An updated base that is comprised of the base, incorporating the
+	  strings that were newly introduced upstream, as identified by their
+	  id's, untranslated, in addition to updating the identifiers that
+	  have been changed.
+	* A plus-diff comprise of only the strings that have been newly
+	  introduced upstream. These need to be translated.
+	* A minus-diff comprised of only the strings that were omitted upstream.
+	  These are preserved for review.
+	* A delta-diff comprised of strings from the catalogue that were changed
+	  between its release, and the older release from which the base
+	  localisation is derived.
+	  These need to be reviewed in order to determine whether the changes are
+	  significant, and as such worthy of updating the corresponding translations.
+	  For example, if the base before being processed is derived from
+	  version 1.31 of the upstream catalogue, and the catalogue is from
+	  version 1.35, then the delta-diff will contain strings whose id's exist
+	  in both versions but which content have been changed.
 
 Step two: Patch. Each run patches the strings in base with strings from the
 input. This is used mainly for: inserting the added strings (from plus-diff)
@@ -59,6 +59,9 @@ language, which is the outcome from step one.
 This is intended to guarantee the ordering of the strings, and that no
 artefacts are introduced.
 """
+
+ap.add_argument('--long-story', action='store_true', help='Print verbose description of the programme.')
+
 ap0 = argparse.ArgumentParser(add_help=False, description='Common, required arguments.')
 
 ap0.add_argument('base', metavar='BASE', default=sys.stdin, type=argparse.FileType('r', encoding='utf-8'),
@@ -81,13 +84,13 @@ sievecommand.add_argument('--catalogue', required=True, dest='catalogue_file', d
 sievecommand.add_argument('--old-catalogue', required=True, dest='old_catalogue_file', type=argparse.FileType('r', encoding='utf-8'),
 		help='The older upstream version of the strings catalogue. This will not be modified.')
 
-sievecommand.add_argument('--added', required=True, dest='added_strings_file', default='added.en.json', type=argparse.FileType('w', encoding='utf-8'),
+sievecommand.add_argument('--added', nargs='?', dest='added_strings_file', default='added.json', type=argparse.FileType('w', encoding='utf-8'),
 		help='Filename to save newly introduced strings to, when in diff mode, or read added translated strings from, when in patch mode.')
 
-sievecommand.add_argument('--changed', required=True, dest='changed_strings_file', default='changed.en.json', type=argparse.FileType('w', encoding='utf-8'),
+sievecommand.add_argument('--changed', nargs='?', dest='changed_strings_file', default='changed.json', type=argparse.FileType('w', encoding='utf-8'),
 		help='Filename to save strings changed between revisions of catalogue.')
 
-sievecommand.add_argument('--dropped', required=True, dest='dropped_strings_file', default='dropped.en.json', type=argparse.FileType('w', encoding='utf-8'),
+sievecommand.add_argument('--dropped', nargs='?', dest='dropped_strings_file', default='dropped.json', type=argparse.FileType('w', encoding='utf-8'),
 		help='Filename to save strings that were dropped from the newer version of upstream to.')
 
 patchcommand = commands.add_parser('patch', parents=[ap0], description="""
@@ -102,20 +105,23 @@ patchcommand.add_argument('--patch', required=True, dest='patch_file', type=argp
 
 
 def sieve(args):
+
+	def report(*s):
+		print(*s, file=sys.stderr)
 	
-	print('Reading catalogue from: ', args.catalogue_file.name)
+	report('Reading catalogue from: ', args.catalogue_file.name)
 	catalogue = json.load(args.catalogue_file, object_pairs_hook=OrderedDict)
-	print(len(catalogue), 'strings read.')
+	report(len(catalogue), 'strings read.')
 
-	print('Reading base localisation from: ', args.base.name)
+	report('Reading base localisation from: ', args.base.name)
 	base = json.load(args.base, object_pairs_hook=OrderedDict)
-	print(len(base), 'strings read.')
+	report(len(base), 'strings read.')
 
-	print('Reading old catalogue from: ', args.old_catalogue_file.name)
+	report('Reading old catalogue from: ', args.old_catalogue_file.name)
 	old_catalogue = json.load(args.old_catalogue_file)
-	print(len(old_catalogue), 'strings read.')
+	report(len(old_catalogue), 'strings read.')
 
-	print ("Reading of inputs completed.")
+	report("Reading of inputs completed.")
 	
 	updated = OrderedDict()
 	added_strings = OrderedDict()
@@ -125,10 +131,10 @@ def sieve(args):
 	#copy the metadata to updated base from base.
 	#if this is uncommented, then so must be the following block.
 	try:
-		print("Copying metadata from base.")
+		report("Copying metadata from base.")
 		updated['@metadata'] = base.pop('@metadata')
 	except KeyError:
-		print("Base contains no metadata!")
+		report("Base contains no metadata!")
 
 	#remove metadata record from catalogue, just to sync it with the base
 	#in order for the later copying through iteration to work.
@@ -137,9 +143,9 @@ def sieve(args):
 	try:
 		del catalogue['@metadata']
 	except KeyError:
-		print("Catalogue contains no metadata!")
+		report("Catalogue contains no metadata!")
 
-	print("Starting sieving strings; added, dropped and changed.")
+	report("Starting sieving strings; added, dropped and changed.")
 	for string_id in catalogue :
 		newStringFound = False
 		if (string_id in base):	#Is this id carried over?
@@ -149,7 +155,7 @@ def sieve(args):
 			#Has the source string been changed between upstream releases?
 			if ((string_id in old_catalogue) and (not catalogue[string_id] == old_catalogue[string_id])):
 				#Yes. So also save its source string for review.
-				print(f"String with id: '{string_id}' was changed.")
+				report(f"String with id: '{string_id}' was changed.")
 				changed_strings[string_id] = catalogue[string_id]
 			#else: It either hasn't changed, or it didn't exist in the version of
 			#old catalogue we're looking at, which means the base translation
@@ -162,7 +168,7 @@ def sieve(args):
 				for old_id in old_catalogue :
 					if ((catalogue[string_id] == old_catalogue[old_id]) and (not old_id in catalogue)) :
 						#This string is found in the old catalogue but with a different id.
-						print(f"A string is found with different id: '{old_id}' ⇒ '{string_id}'.")
+						report(f"A string is found with different id: '{old_id}' ⇒ '{string_id}'.")
 						if (old_id in base):
 							#Save its existing translation to the updated base, with the new id.
 							updated[string_id] = base.pop(old_id)
@@ -175,7 +181,7 @@ def sieve(args):
 		
 		if newStringFound :
 			#Id existed in old catalogue but not in base, so it is new:
-			print("Found newly introduced string: ", string_id)
+			report("Found newly introduced string: ", string_id)
 			#..so insert it, untranslated, in updated base at its order
 			updated[string_id] = catalogue[string_id]
 
@@ -183,27 +189,27 @@ def sieve(args):
 			#in order for translators to work on it.
 			added_strings[string_id] = catalogue[string_id]
 	
-	print("Sieving strings completed.")		
+	report("Sieving strings completed.")		
 	#..now what remains in base dictionary are dropped strings.			
 	
-	print(f"Writing {len(updated)} carried-over and added strings to {args.updated.name}")
+	report(f"Writing {len(updated)} carried-over and added strings to {args.updated.name}")
 	json.dump(updated, args.updated, ensure_ascii=False, indent='\t')
 
-	print(f"Writing {len(added_strings)} newly added strings to {args.added_strings_file.name}")
+	report(f"Writing {len(added_strings)} newly added strings to {args.added_strings_file.name}")
 	json.dump(added_strings, args.added_strings_file, ensure_ascii=False, indent='\t')
 
-	print(f"Writing {len(base)} dropped strings to {args.dropped_strings_file.name}")
+	report(f"Writing {len(base)} dropped strings to {args.dropped_strings_file.name}")
 	json.dump(base, args.dropped_strings_file, ensure_ascii=False, indent='\t')
 	
-	print(f"Writing {len(changed_strings)} changed catalogue strings to {args.changed_strings_file.name}")
+	report(f"Writing {len(changed_strings)} changed catalogue strings to {args.changed_strings_file.name}")
 	json.dump(changed_strings, args.changed_strings_file, ensure_ascii=False, indent='\t')
 
 
 def patch(args):
-	print('Reading base localisation from: ', args.base)
+	report('Reading base localisation from: ', args.base)
 	base = json.load(args.base_file, object_pairs_hook=OrderedDict)
 
-	print('Reading patch from: ', args.patch_file)
+	report('Reading patch from: ', args.patch_file)
 	patch = json.load(args.patch_file)
 
 	try:
@@ -212,7 +218,7 @@ def patch(args):
 	except KeyError:
 		raise SystemExit('The patch contains a string with an id which does not exist in base. Aborting.')
 	else:
-		print('Writing patched localisation to: ', args.updated)
+		report('Writing patched localisation to: ', args.updated)
 		json.dump(base, args.updated, ensure_ascii=False, indent='\t')
 
 try:
@@ -220,7 +226,9 @@ try:
 	patchcommand.set_defaults(func=patch)
 
 	args = ap.parse_args()
-
-	args.func(args)
+	if args.long_story:
+		print(long_story)
+	else:
+		args.func(args)
 except AttributeError:
 	ap.print_usage()
