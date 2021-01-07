@@ -60,7 +60,7 @@ language, which is the outcome from step one.
 This is intended to guarantee the ordering of the strings, and that no
 artefacts are introduced.
 """
-
+from __future__ import annotations
 import sys, argparse, json
 from collections import OrderedDict
 
@@ -119,32 +119,35 @@ patchcommand = commands.add_parser('patch', parents=[ap0], description="""
 
 patchcommand.add_argument('--patch', required=True, dest='patch', type=argparse.FileType('r', encoding='utf-8'),
 		help='Localisation string, modified somehow, to patch the base with. This will not be modified.')
-	
 
-def sieve(args):
 
-	def report(*s):
-		if not args.quiet:
-			print(*s, file=sys.stderr)
-	
-	report('Reading catalogue from: ', args.catalogue.name)
-	catalogue = json.load(args.catalogue, object_pairs_hook=OrderedDict)
-	report(len(catalogue), 'strings read.')
+def report(*s) -> None:
+	if not args.quiet:
+		print(*s, file=sys.stderr)
 
-	report('Reading base localisation from: ', args.base.name)
-	base = json.load(args.base, object_pairs_hook=OrderedDict)
-	report(len(base), 'strings read.')
 
-	report('Reading old catalogue from: ', args.old_catalogue.name)
-	old_catalogue = json.load(args.old_catalogue)
-	report(len(old_catalogue), 'strings read.')
+def read_strings(banner: str, source: argparse.FileType, hook: callable = None) -> dict[string, string]:
+	report(f'Reading {banner} from: {source.name}')
+	catalogue = json.load(source, object_pairs_hook=hook)
+	report(len(catalogue), 'strings read.\n')
+	return catalogue
 
-	report("Reading of inputs completed.")
-	
+
+def write_strings(banner: str, source: dict, destination: argparse.FileType) -> None:
+	json.dump(source, destination, ensure_ascii=False, indent='\t')
+	report(f"{len(source)} carried-over {banner} strings written to {destination.name}")
+
+
+def sieve(args) -> None:
+
+	catalogue = read_strings('catalogue', args.catalogue, OrderedDict)
+	base = read_strings('base', args.base, OrderedDict)
+	old_catalogue = read_strings('old catalogue', args.old_catalogue)
+
+	report('Reading of inputs completed.\n')
+
 	#Create structures for outputs
-	updated = OrderedDict()
-	added_strings = OrderedDict()
-	changed_strings =  OrderedDict()
+	updated = OrderedDict(); added_strings = OrderedDict(); changed_strings = OrderedDict()
 
 	#Copy the metadata to updated base from base.
 	try:
@@ -160,7 +163,7 @@ def sieve(args):
 	except KeyError:
 		report('Catalogue contains no metadata!')
 
-	report('\nStarting sieving strings; added, dropped and changed.')
+	report('\nStarting sieving strings; added, dropped and changed:\n')
 
 	for string_id in catalogue :
 		newStringFound = False
@@ -172,7 +175,7 @@ def sieve(args):
 			#Has the source string been changed between upstream source releases?
 			if ((string_id in old_catalogue) and (not catalogue[string_id] == old_catalogue[string_id])):
 				#Yes. So also save its source string for review.
-				print(f"String with id: '{string_id}' was changed in source.", file=sys.stderr)
+				report(f"String with id: '{string_id}' was changed in source.")
 				changed_strings[string_id] = catalogue[string_id]
 			#else: It either hasn't changed, or it didn't exist in the version of
 			#old catalogue we're looking at, which means the base translation
@@ -184,7 +187,7 @@ def sieve(args):
 				for old_id in old_catalogue :
 					if ((catalogue[string_id] == old_catalogue[old_id]) and (not old_id in catalogue)) :
 						#This string is found in the old catalogue but with a different id.
-						print(f"A string is found with different id: '{old_id}' ⇒ '{string_id}'.", file=sys.stderr)
+						report(f"A string is found with different id: {old_id} ⇒ {string_id}.")
 						if (old_id in base):
 							#Save its existing translation to the updated base, with the new id.
 							updated[string_id] = base.pop(old_id)
@@ -198,7 +201,7 @@ def sieve(args):
 
 		if newStringFound :
 			#Id existed in old catalogue but not in base, so it is new:
-			report('Found newly introduced string: ', string_id)
+			report(f"Found newly introduced string: {string_id}")
 			#..so insert it, untranslated, in updated base at its order
 			updated[string_id] = catalogue[string_id]
 
@@ -213,9 +216,7 @@ def sieve(args):
 		#could have the drawback of omitting some strings, if the versions
 		#of the upstream translation is not fully in sync with the catalogue.
 		report('\nAn upstream localisation was specified. It will be used as filter.')
-		report('Reading upstream localisation from: ', args.upstream.name)
-		upstream = json.load(args.upstream)
-		report(len(upstream), 'strings read.')
+		upstream = read_strings('upstream localisation', args.upstream)
 		for strings in [updated, added_strings, changed_strings]:
 			for string_id in list(strings):
 				if (not string_id in upstream):
@@ -225,22 +226,14 @@ def sieve(args):
 	report('\nSieving strings completed.')
 	#..now what remains in base dictionary are dropped strings.
 
-	report(f"Writing {len(updated)} carried-over and added strings to {args.updated.name}")
-	json.dump(updated, args.updated, ensure_ascii=False, indent='\t')
-
-	report(f"Writing {len(added_strings)} newly added strings to {args.added_strings.name}")
-	json.dump(added_strings, args.added_strings, ensure_ascii=False, indent='\t')
-
-	report(f"Writing {len(changed_strings)} changed catalogue strings to {args.changed_strings.name}")
-	json.dump(changed_strings, args.changed_strings, ensure_ascii=False, indent='\t')
-
-	report(f"Writing {len(base)} dropped (or refactored) strings to {args.dropped_strings.name}")
-	json.dump(base, args.dropped_strings, ensure_ascii=False, indent='\t')
+	write_strings('carried-over and added', updated, args.updated)
+	write_strings('newly added', added_strings, args.added_strings)
+	write_strings('changed', changed_strings, args.changed_strings)
+	write_strings('dropped (or refactored)', base, args.dropped_strings)
 
 
 def patch(args):
-	report('Reading base localisation from: ', args.base)
-	base = json.load(args.base, object_pairs_hook=OrderedDict)
+	base = read_strings('base localisation', args.base, OrderedDict)
 
 	report('Reading patch from: ', args.patch)
 	patch = json.load(args.patch)
@@ -251,8 +244,8 @@ def patch(args):
 	except KeyError:
 		raise SystemExit('The patch contains a string with an id which does not exist in base. Aborting.')
 	else:
-		report('Writing patched localisation to: ', args.updated)
 		json.dump(base, args.updated, ensure_ascii=False, indent='\t')
+		report('Patched localisation strings written to: ', args.updated)
 
 try:
 	sievecommand.set_defaults(func=sieve)
