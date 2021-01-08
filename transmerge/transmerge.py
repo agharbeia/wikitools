@@ -74,14 +74,14 @@ ap.add_argument('--version', action='version', version='%(prog)s 0.7')
 
 ap.add_argument('--long-story', action='store_true', help='Print verbose description of the programme.')
 
-ap0 = argparse.ArgumentParser(add_help=False, description='Common, required arguments.')
+ap0 = argparse.ArgumentParser(add_help=False, description='Common arguments.')
 
 ap0.add_argument('--quiet', action='store_true', help='Do not print progress messages.')
 
-ap0.add_argument('base', metavar='BASE', default=sys.stdin, type=argparse.FileType('r', encoding='utf-8'),
+ap0.add_argument('base', nargs='?', metavar='BASE', default=sys.stdin, type=argparse.FileType('r', encoding='utf-8'),
 		help='Filename from which to read base translation resource. It should contain the translations to be preserved across upstream releases. This will not be modified.')
 
-ap0.add_argument('updated', metavar='UPDATED', default=sys.stdout, type=argparse.FileType('w', encoding='utf-8'),
+ap0.add_argument('updated', nargs='?', metavar='UPDATED', default=sys.stdout, type=argparse.FileType('w', encoding='utf-8'),
 		help='Filename to write updated base to.')
 
 
@@ -110,6 +110,7 @@ sievecommand.add_argument('--changed', nargs='?', dest='changed_strings', defaul
 sievecommand.add_argument('--dropped', nargs='?', dest='dropped_strings', default='dropped.json', type=argparse.FileType('w', encoding='utf-8'),
 		help='Filename to save strings that were dropped from the newer version of upstream to.')
 
+
 patchcommand = commands.add_parser('patch', parents=[ap0], description="""
 	Merges strings from one localisation resource into another.
 	The strings' identifiers from the patch must be already existing in the base,
@@ -119,6 +120,15 @@ patchcommand = commands.add_parser('patch', parents=[ap0], description="""
 
 patchcommand.add_argument('--patch', required=True, dest='patch', type=argparse.FileType('r', encoding='utf-8'),
 		help='Localisation string, modified somehow, to patch the base with. This will not be modified.')
+
+
+#grepcommand = commands.add_parser('grep', parents=[ap0], description="""
+#	Extracts from one catalogue strings that exist in another, identified by id's.
+#""",
+#	help="Extracts from one catalogue strings that exist in another, identified by id's.")
+
+#grepcommand.add_argument('target', metavar='TARGET', type=argparse.FileType('r', encoding='utf-8'),
+#		help='Filename from which to read the strings to search for in BASE.')
 
 
 def report(*s) -> None:
@@ -135,7 +145,7 @@ def read_strings(banner: str, source: argparse.FileType, hook: callable = None) 
 
 def write_strings(banner: str, source: dict, destination: argparse.FileType) -> None:
 	json.dump(source, destination, ensure_ascii=False, indent='\t')
-	report(f"{len(source)} carried-over {banner} strings written to {destination.name}")
+	report(f"{len(source)} {banner} strings written to {destination.name}")
 
 
 def sieve(args) -> None:
