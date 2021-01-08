@@ -21,10 +21,13 @@ if ( defined( 'MW_DB' ) ) {
 	    if ( preg_match( '/^(.*)\.wikido.xyz$/', $server, $matches ) ) {
     	    $wikiname = $matches[1];
 	    } else {
-		die( "We should not be here since Apache shouldn't have routed a request to $server to WikiDo." );
+    	    die( "We should not be here since Apache shouldn't have routed a request to $server to WikiDo." );
     	}
 	} else {
 		die("Couldn't guess which WikiDo member to work on.");
 	}
     require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 }
+
+## Global directives
+//$wgReadOnly = 'الويكي في طور الصيانة. يمكنكم القراءة لكن لا يمكنكم التأليف.';
