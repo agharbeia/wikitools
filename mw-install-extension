@@ -1,0 +1,51 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	echo "No name of a MW extension was specified. Exiting." >&2
+	exit 1
+fi
+	
+if [ "$(whoami)" != 'www-data' ]; then
+	echo "The script needs to be run as the webserver's user (assumed to be 'www-data'). Exiting." >&2
+	exit 1
+fi
+
+MW_VER='1.35'
+echo "No Mediawiki version has been specified. Assuming $MW_VER"
+
+#This script assumes the directory structure specification of WikiDo
+MW_BASE_DIR=$(realpath '../')
+read RN < $MW_BASE_DIR/RELEASE-NOTES-$MW_VER
+if [[ ! -f $MW_BASE_DIR/RELEASE-NOTES-$MW_VER || ("$RN" != "= MediaWiki $MW_VER =") ]]; then
+	echo "Mediawiki's instalation base could not be detected. This script must be run in the extensions directory of a MW instance. Exiting." >&2
+	exit 1
+else
+	WIKIDO_EXT_REPO=$(realpath "$MW_BASE_DIR/../extra/extensions")
+	echo "Extensions' repository directory is: $WIKIDO_EXT_REPO" >&2
+	echo "Working Extensions directory is: $MW_BASE_DIR/extensions" >&2
+fi
+
+if [ ! -d "$MW_BASE_DIR/extensions/$1" ]; then
+	if [ ! -d "$WIKIDO_EXT_REPO/$1-"* ];  then
+		echo "This extension does not exist in local repository. Downloading..." >&2
+		$(dirname "$0")/mw-get-extension.py --mw-version "$MW_VER" --target-dir "$WIKIDO_EXT_REPO" "$1"
+		error_code=$?
+		if [ $error_code -ne 0 ]; then 
+			echo "Something wrong happened while downloading. Last error code was $error_code. Check the output above. Exiting." >&2
+			exit 1
+		fi
+	else
+		echo "This extension was already downloaded." >&2
+	fi
+
+	echo "Linking from the extensions' repository to the working extensions directory." >&2
+	ln --symbolic $(ls -d "$WIKIDO_EXT_REPO/$1-"*) "$MW_BASE_DIR/extensions/$1"
+else
+	if [ -h "$MW_BASE_DIR/extensions/$1" ]; then
+		echo "This extension was already downloaded and linked. Exiting." >&2
+	else
+		echo "The extntion seems to have been bundled with MW $MW_VER. Exiting." >&2
+	fi
+fi
+
+echo "Done." >&2
