@@ -3,7 +3,7 @@
 #   Configuration variables used in this script,
 #+ and in the configuration files' templates.
 #
-MW_VER=${5-'1.35.5'}
+MW_Ver=${5-'1.35.5'}
 
 # Wiki configuration:
 Apex=wikido.xyz
@@ -12,13 +12,13 @@ URL_Prefix=""		#with leading slash. Used not in this script, but in templates
 Repo_Alias=repo	#Also used not in this script, but in templates
 
 # Directories:
-MW_Source=/srv/app/mediawiki/$MW_VER/core
+MW_Source=/srv/app/mediawiki/$MW_Ver/core
 Templates_Dir=/srv/src/wikitools/templates
 Secrets_Dir=/srv/websecrets
 Repo_Base_Dir=/srv/repositorea
 
 # Templates:
-DB_Template=$Templates_Dir/wikido.xyz.mw-$MW_VER.sql
+DB_Template=$Templates_Dir/wikido.xyz.mw-$MW_Ver.sql
 LocalSettings_Template=$Templates_Dir/LocalSettings.template
 Apache_Template=$Templates_Dir/apache.$Apex.conf.template
 Robots_Template=$Templates_Dir/robots.txt.template
@@ -36,7 +36,7 @@ if [[ -z $1 || -z $2 || -z $3 || -z $4 ]]; then
 		    <title>: The natural language title of the wikisite.
 		    <username>: Username of the first user to be created; and granted both "sysop" and "bureaucrat" status.
 		    <password>: Password for aforementioned user.
-		    <mw_version>: an optoinal MW version number to construct paths. Currently defaults to $MW_VER
+		    <mw_version>: an optoinal MW version number to construct paths. Currently defaults to $MW_Ver
 		More configuration variables exist in the code to customise the process.
 		This scritp needs to be run as root. All arguments are required.
 USAGE
@@ -49,23 +49,23 @@ else
     real_user=$SUDO_USER
 fi
 
-WIKI_HANDLE=$1
-WIKI_TITLE=$2
-WIKI_USER=$3
-WIKI_PASS=$4
+Wiki_Handle=$1
+Wiki_Title=$2
+Wiki_Username=$3
+Wiki_Password=$4
 
-echo -e "Creating instance for:\nHandle: $WIKI_HANDLE\nTitle: $WIKI_TITLE\nMW version: $MW_VER" >&2
+echo -e "Creating instance for:\nHandle: $Wiki_Handle\nTitle: $Wiki_Title\nMW version: $MW_Ver" >&2
 
 #
 # Derivative constants:
 FAMILY_ROOT=/srv/www/$Apex
-WIKI_ROOT=$FAMILY_ROOT/$WIKI_HANDLE
-WIKI_FQDN=$WIKI_HANDLE.$Apex
-REPOSITORY_DIR=$Repo_Base_Dir/$Apex/$WIKI_HANDLE
-CACHE_DIR=/var/cache/$Apex/$WIKI_HANDLE
-TEMP_DIR=/var/tmp/$Apex/$WIKI_HANDLE
-DB_NAME=${WIKI_HANDLE}_wiki
-DB_USER=wiki_${WIKI_HANDLE}
+WIKI_ROOT=$FAMILY_ROOT/$Wiki_Handle
+WIKI_FQDN=$Wiki_Handle.$Apex
+REPOSITORY_DIR=$Repo_Base_Dir/$Apex/$Wiki_Handle
+CACHE_DIR=/var/cache/$Apex/$Wiki_Handle
+TEMP_DIR=/var/tmp/$Apex/$Wiki_Handle
+DB_NAME=${Wiki_Handle}_wiki
+DB_USER=wiki_${Wiki_Handle}
 
 conf_from_template() {
 # Magically generates configuration files based on templates.
@@ -97,8 +97,8 @@ sudo -u www-data cp "$Robots_Template" "$WIKI_ROOT/robots.txt"
 #Generate websecrets files ##This is entropy-expensive, so better not run it unless it's feasible
 DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d) 
 
-conf_from_template "$Secrets_Template" > "$Secrets_Dir/$WIKI_HANDLE.$Apex"
-chmod u=r,g=r,o=- "$Secrets_Dir/$WIKI_HANDLE.$Apex"
+conf_from_template "$Secrets_Template" > "$Secrets_Dir/$Wiki_Handle.$Apex"
+chmod u=r,g=r,o=- "$Secrets_Dir/$Wiki_Handle.$Apex"
 
 #Create database
 echo "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';" | mysql --user=root --password && echo -e "Successfuly created database $DB_NAME; user $DB_USER, and granted permissions.\nDatabase user's password is $DB_PASSWORD." >&2
@@ -107,13 +107,13 @@ mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_Template && echo "S
 
 
 #create 1st wiki user
-sudo -u www-data php "$MW_Source/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$WIKI_USER" $WIKI_PASS
+sudo -u www-data php "$MW_Source/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$Wiki_Username" $Wiki_Password
 
 sudo -u www-data php "$MW_Source/maintenance/install.php 
 
 #create logo
-#HANDLE_HASH=$(jacksum -a $CHECKSUM -F "#CHECKSUM" -X -q txt:$WIKI_HANDLE)
-HANDLE_HASH=$(echo -n $WIKI_HANDLE | md5sum)
+#HANDLE_HASH=$(jacksum -a $CHECKSUM -F "#CHECKSUM" -X -q txt:$Wiki_Handle)
+HANDLE_HASH=$(echo -n $Wiki_Handle | md5sum)
 
 COLOUR1=${HANDLE_HASH:0:6}
 COLOUR2=$(for o in {0..4..2}; do printf '%02X' $(( (0x${HANDLE_HASH:o:2} + 0x80) % 0xFF )); done)

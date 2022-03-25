@@ -3,7 +3,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	exit;
 } # Protect against web entry
 
-\$wgSitename = "$WIKI_TITLE";
+\$wgSitename = "$Wiki_Title";
 \$wgMetaNamespace = 'ويكي';
 
 
