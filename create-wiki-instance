@@ -6,24 +6,24 @@
 MW_VER=${5-'1.35.5'}
 
 # Wiki configuration:
-APEX=wikido.xyz
-MW_INSTANCE_DIR=mw
-URL_PREFIX=""   #with leading slash
-REPO_ALIAS=repo
+Apex=wikido.xyz
+MW_Instance_Dir=mw
+URL_Prefix=""		#with leading slash. Used not in this script, but in templates
+Repo_Alias=repo	#Also used not in this script, but in templates
 
 # Directories:
-MW_SOURCE=/srv/app/mediawiki/$MW_VER/core
-TEMPLATES_DIR=/srv/src/wikitools/templates
-SECRETS_DIR=/srv/websecrets
-REPO_BASE_DIR=/srv/repositorea
+MW_Source=/srv/app/mediawiki/$MW_VER/core
+Templates_Dir=/srv/src/wikitools/templates
+Secrets_Dir=/srv/websecrets
+Repo_Base_Dir=/srv/repositorea
 
 # Templates:
-DB_TEMPLATE=$TEMPLATES_DIR/wikido.xyz.mw-$MW_VER.sql
-LOCALSETTINGS_TEMPLATE=$TEMPLATES_DIR/LocalSettings.template
-APACHE_TEMPLATE=$TEMPLATES_DIR/apache.$APEX.conf.template
-ROBOTS_TEMPLATE=$TEMPLATES_DIR/robots.txt.template
-SECRETS_TEMPLATE=$TEMPLATES_DIR/secrets.template
-LOGO_TEMPLATE=$TEMPLATES_DIR/wikido.xyz-logo.svg.template
+DB_Template=$Templates_Dir/wikido.xyz.mw-$MW_VER.sql
+LocalSettings_Template=$Templates_Dir/LocalSettings.template
+Apache_Template=$Templates_Dir/apache.$Apex.conf.template
+Robots_Template=$Templates_Dir/robots.txt.template
+Secrets_Template=$Templates_Dir/secrets.template
+Logo_Template=$Templates_Dir/wikido.xyz-logo.svg.template
 
 ###=========
 if [[ -z $1 || -z $2 || -z $3 || -z $4 ]]; then
@@ -58,22 +58,14 @@ echo -e "Creating instance for:\nHandle: $WIKI_HANDLE\nTitle: $WIKI_TITLE\nMW ve
 
 #
 # Derivative constants:
-FAMILY_ROOT=/srv/www/$APEX
+FAMILY_ROOT=/srv/www/$Apex
 WIKI_ROOT=$FAMILY_ROOT/$WIKI_HANDLE
-WIKI_FQDN=$WIKI_HANDLE.$APEX
-REPOSITORY_DIR=$REPO_BASE_DIR/$APEX/$WIKI_HANDLE
-CACHE_DIR=/var/cache/$APEX/$WIKI_HANDLE
-TEMP_DIR=/var/tmp/$APEX/$WIKI_HANDLE
+WIKI_FQDN=$WIKI_HANDLE.$Apex
+REPOSITORY_DIR=$Repo_Base_Dir/$Apex/$WIKI_HANDLE
+CACHE_DIR=/var/cache/$Apex/$WIKI_HANDLE
+TEMP_DIR=/var/tmp/$Apex/$WIKI_HANDLE
 DB_NAME=${WIKI_HANDLE}_wiki
 DB_USER=wiki_${WIKI_HANDLE}
-
-# Create directories and most needed symbolic links, acting as the apache user
-sudo -u www-data mkdir --parents $WIKI_ROOT
-sudo -u www-data ln --symbolic $MW_SOURCE $WIKI_ROOT/$MW_INSTANCE_DIR
-sudo -u www-data cp --recursive $MW_SOURCE/images $REPOSITORY_DIR
-sudo -u www-data cp --recursive $MW_SOURCE/cache $CACHE_DIR
-sudo -u www-data mkdir --parents $TEMP_DIR
-mkdir --parents $SECRETS_DIR && chgrp www-data $SECRETS_DIR
 
 conf_from_template() {
 # Magically generates configuration files based on templates.
@@ -85,32 +77,39 @@ conf_from_template() {
 EOF"
 }
 
+# Create directories and most needed symbolic links, acting as the apache user
+sudo -u www-data mkdir --parents $WIKI_ROOT
+sudo -u www-data ln --symbolic $MW_Source $WIKI_ROOT/$MW_Instance_Dir
+sudo -u www-data cp --recursive $MW_Source/images $REPOSITORY_DIR
+sudo -u www-data cp --recursive $MW_Source/cache $CACHE_DIR
+sudo -u www-data mkdir --parents $TEMP_DIR
+mkdir --parents $Secrets_Dir && chgrp www-data $Secrets_Dir
 
-# Generate LocalSettings.php for the wiki.
+# Generate LocalSettings.php for the wiki instance
 # This instance-specific file is invoked from a dispatcher at the wikifamily-level
-conf_from_template "$LOCALSETTINGS_TEMPLATE" > "$WIKI_ROOT/LocalSettings.php"
+conf_from_template "$LocalSettings_Template" > "$WIKI_ROOT/LocalSettings.php"
 
 #Generate Apache configuration
-conf_from_template "$APACHE_TEMPLATE" > "/etc/apache2/sites-available/$WIKI_FQDN.conf"
+conf_from_template "$Apache_Template" > "/etc/apache2/sites-available/$WIKI_FQDN.conf"
 
-sudo -u www-data cp "$ROBOTS_TEMPLATE" "$WIKI_ROOT/robots.txt"
+sudo -u www-data cp "$Robots_Template" "$WIKI_ROOT/robots.txt"
 
 #Generate websecrets files ##This is entropy-expensive, so better not run it unless it's feasible
 DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d) 
 
-conf_from_template "$SECRETS_TEMPLATE" > "$SECRETS_DIR/$WIKI_HANDLE.$APEX"
-chmod u=r,g=r,o=- "$SECRETS_DIR/$WIKI_HANDLE.$APEX"
+conf_from_template "$Secrets_Template" > "$Secrets_Dir/$WIKI_HANDLE.$Apex"
+chmod u=r,g=r,o=- "$Secrets_Dir/$WIKI_HANDLE.$Apex"
 
 #Create database
 echo "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';" | mysql --user=root --password && echo -e "Successfuly created database $DB_NAME; user $DB_USER, and granted permissions.\nDatabase user's password is $DB_PASSWORD." >&2
 
-mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_TEMPLATE && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
+mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_Template && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
 
 
 #create 1st wiki user
-sudo -u www-data php "$MW_SOURCE/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$WIKI_USER" $WIKI_PASS
+sudo -u www-data php "$MW_Source/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$WIKI_USER" $WIKI_PASS
 
-sudo -u www-data php "$MW_SOURCE/maintenance/install.php 
+sudo -u www-data php "$MW_Source/maintenance/install.php 
 
 #create logo
 #HANDLE_HASH=$(jacksum -a $CHECKSUM -F "#CHECKSUM" -X -q txt:$WIKI_HANDLE)
@@ -126,8 +125,8 @@ else
 	FILL1=#$COLOUR1
 	FILL2=#$COLOUR2
 fi
-conf_from_template "$LOGO_TEMPLATE" > $WIKI_ROOT/logo.svg
-sudo -u www-data php $MW_SOURCE/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
+conf_from_template "$Logo_Template" > $WIKI_ROOT/logo.svg
+sudo -u www-data php $MW_Source/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
 
 
 a2ensite $WIKI_FQDN.conf

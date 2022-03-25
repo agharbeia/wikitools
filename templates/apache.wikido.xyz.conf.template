@@ -2,26 +2,26 @@
 	ServerName $WIKI_FQDN
 	ServerAlias www.$WIKI_FQDN
 	UseCanonicalName On
-	ServerAdmin postmaster@$APEX
+	ServerAdmin postmaster@$Apex
 
 	DocumentRoot "$WIKI_ROOT"
-	DirectoryIndex /$MW_INSTANCE_DIR/index.php
-	ErrorDocument 404 /$MW_INSTANCE_DIR/thumb_handler.php
+	DirectoryIndex /$MW_Instance_Dir/index.php
+	ErrorDocument 404 /$MW_Instance_Dir/thumb_handler.php
 
 	ErrorLog \${APACHE_LOG_DIR}/${WIKI_FQDN}_error.log
 	LogLevel warn
 	CustomLog \${APACHE_LOG_DIR}/${WIKI_FQDN}_access.log combined
 
 	SSLEngine on
-	SSLCertificateKeyFile /etc/letsencrypt/live/$APEX/privkey.pem
-	SSLCertificateFile /etc/letsencrypt/live/$APEX/cert.pem
-	SSLCertificateChainFile /etc/letsencrypt/live/$APEX/chain.pem
+	SSLCertificateKeyFile /etc/letsencrypt/live/$Apex/privkey.pem
+	SSLCertificateFile /etc/letsencrypt/live/$Apex/cert.pem
+	SSLCertificateChainFile /etc/letsencrypt/live/$Apex/chain.pem
 
-	Alias /$REPO_ALIAS $REPOSITORY_DIR
-	${URL_PREFIX:+"Alias $URL_PREFIX $WIKI_ROOT/$MW_INSTANCE_DIR/index.php"}
-	RedirectMatch temp ^/\.well-known/change-password$ $URL_PREFIX/Special:PasswordReset
-	RedirectMatch temp "^/favicon.ico$" $URL_PREFIX/Special:Filepath/logo.svg?width=64
-	Redirect temp /id/ $URL_PREFIX/Special:URIResolver/
+	Alias /$Repo_Alias $REPOSITORY_DIR
+	${URL_Prefix:+"Alias $URL_Prefix $WIKI_ROOT/$MW_Instance_Dir/index.php"}
+	RedirectMatch temp ^/\.well-known/change-password$ $URL_Prefix/Special:PasswordReset
+	RedirectMatch temp "^/favicon.ico$" $URL_Prefix/Special:Filepath/logo.svg?width=64
+	Redirect temp /id/ $URL_Prefix/Special:URIResolver/
 
 	EnableSendfile On
 
@@ -42,7 +42,7 @@
 		AllowOverride All
 		Options ExecCGI FollowSymLinks
 
-		FallBackResource ${URL_PREFIX:-/}
+		FallBackResource ${URL_Prefix:-/}
 	</Directory>
 
 	php_value upload_max_filesize 128M
