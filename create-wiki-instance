@@ -21,12 +21,12 @@ Temp_Root=/var/tmp
 Secrets_Dir=/srv/websecrets
 
 # Templates:
-DB_Template=$Templates_Dir/wikido.xyz.mw-$MW_Ver.sql
-LocalSettings_Template=$Templates_Dir/LocalSettings.template
-Apache_Template=$Templates_Dir/apache.$Apex.conf.template
-Robots_Template=$Templates_Dir/robots.txt.template
-Secrets_Template=$Templates_Dir/secrets.template
-Logo_Template=$Templates_Dir/wikido.xyz-logo.svg.template
+DB_Template=wikido.xyz.mw-$MW_Ver.sql
+LocalSettings_Template=LocalSettings.template
+Apache_Template=apache.$Apex.conf.template
+Robots_Template=robots.txt.template
+Secrets_Template=secrets.template
+Logo_Template=wikido.xyz-logo.svg.template
 
 ###=========
 if [[ -z $1 || -z $2 || -z $3 || -z $4 ]]; then
@@ -91,23 +91,23 @@ mkdir --parents $Secrets_Dir && chgrp www-data $Secrets_Dir
 
 # Generate LocalSettings.php for the wiki instance
 # This instance-specific file is invoked from a dispatcher at the wikifamily-level
-conf_from_template "$LocalSettings_Template" > "$WIKI_ROOT/LocalSettings.php"
+conf_from_template "$Templates_Dir/$LocalSettings_Template" > "$WIKI_ROOT/LocalSettings.php"
 
 #Generate Apache configuration
-conf_from_template "$Apache_Template" > "/etc/apache2/sites-available/$WIKI_FQDN.conf"
+conf_from_template "$Templates_Dir/$Apache_Template" > "/etc/apache2/sites-available/$WIKI_FQDN.conf"
 
-sudo -u www-data cp "$Robots_Template" "$WIKI_ROOT/robots.txt"
+sudo -u www-data cp "$Templates_Dir/$Robots_Template" "$WIKI_ROOT/robots.txt"
 
 #Generate websecrets files ##This is entropy-expensive, so better not run it unless it's feasible
 DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d)
 
-conf_from_template "$Secrets_Template" > "$Secrets_Dir/$Wiki_Handle.$Apex"
+conf_from_template "$Templates_Dir/$Secrets_Template" > "$Secrets_Dir/$Wiki_Handle.$Apex"
 chmod u=r,g=r,o=- "$Secrets_Dir/$Wiki_Handle.$Apex"
 
 #Create database
 echo "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';" | mysql --user=root --password && echo -e "Successfuly created database $DB_NAME; user $DB_USER, and granted permissions.\nDatabase user's password is $DB_PASSWORD." >&2
 
-mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_Template && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
+mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $Templates_Dir/$DB_Template && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
 
 
 #create 1st wiki user
@@ -128,7 +128,7 @@ else
 	FILL1=#$COLOUR1
 	FILL2=#$COLOUR2
 fi
-conf_from_template "$Logo_Template" > $WIKI_ROOT/logo.svg
+conf_from_template "$Templates_Dir/$Logo_Template" > $WIKI_ROOT/logo.svg
 sudo -u www-data php $MW_Source/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
 
 
