@@ -14,8 +14,11 @@ Repo_Alias=repo	#Also used not in this script, but in templates
 # Directories:
 MW_Source=/srv/app/mediawiki/$MW_Ver/core
 Templates_Dir=/srv/src/wikitools/templates
+Web_Root=/srv/www
+Repo_Root=/srv/repositorea
+Cache_Root=/var/cache
+Temp_Root=/var/tmp
 Secrets_Dir=/srv/websecrets
-Repo_Base_Dir=/srv/repositorea
 
 # Templates:
 DB_Template=$Templates_Dir/wikido.xyz.mw-$MW_Ver.sql
@@ -56,16 +59,16 @@ Wiki_Password=$4
 
 echo -e "Creating instance for:\nHandle: $Wiki_Handle\nTitle: $Wiki_Title\nMW version: $MW_Ver" >&2
 
-#
+
 # Derivative constants:
-FAMILY_ROOT=/srv/www/$Apex
-WIKI_ROOT=$FAMILY_ROOT/$Wiki_Handle
 WIKI_FQDN=$Wiki_Handle.$Apex
-REPOSITORY_DIR=$Repo_Base_Dir/$Apex/$Wiki_Handle
-CACHE_DIR=/var/cache/$Apex/$Wiki_Handle
-TEMP_DIR=/var/tmp/$Apex/$Wiki_Handle
+WIKI_ROOT=$Web_Root/$Apex/$Wiki_Handle
+REPOSITORY_DIR=$Repo_Root/$Apex/$Wiki_Handle
+CACHE_DIR=$Cache_Root/$Apex/$Wiki_Handle
+TEMP_DIR=$Temp_Root/$Apex/$Wiki_Handle
 DB_NAME=${Wiki_Handle}_wiki
 DB_USER=wiki_${Wiki_Handle}
+
 
 conf_from_template() {
 # Magically generates configuration files based on templates.
@@ -77,7 +80,8 @@ conf_from_template() {
 EOF"
 }
 
-# Create directories and most needed symbolic links, acting as the apache user
+
+# Create directories and most needed symbolic links, acting as the Apache user
 sudo -u www-data mkdir --parents $WIKI_ROOT
 sudo -u www-data ln --symbolic $MW_Source $WIKI_ROOT/$MW_Instance_Dir
 sudo -u www-data cp --recursive $MW_Source/images $REPOSITORY_DIR
@@ -95,7 +99,7 @@ conf_from_template "$Apache_Template" > "/etc/apache2/sites-available/$WIKI_FQDN
 sudo -u www-data cp "$Robots_Template" "$WIKI_ROOT/robots.txt"
 
 #Generate websecrets files ##This is entropy-expensive, so better not run it unless it's feasible
-DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d) 
+DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d)
 
 conf_from_template "$Secrets_Template" > "$Secrets_Dir/$Wiki_Handle.$Apex"
 chmod u=r,g=r,o=- "$Secrets_Dir/$Wiki_Handle.$Apex"
@@ -109,10 +113,9 @@ mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $DB_Template && echo "S
 #create 1st wiki user
 sudo -u www-data php "$MW_Source/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$Wiki_Username" $Wiki_Password
 
-sudo -u www-data php "$MW_Source/maintenance/install.php 
+sudo -u www-data php "$MW_Source/maintenance/install.php
 
 #create logo
-#HANDLE_HASH=$(jacksum -a $CHECKSUM -F "#CHECKSUM" -X -q txt:$Wiki_Handle)
 HANDLE_HASH=$(echo -n $Wiki_Handle | md5sum)
 
 COLOUR1=${HANDLE_HASH:0:6}
