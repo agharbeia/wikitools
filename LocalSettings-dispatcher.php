@@ -11,7 +11,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 $WebRoot = "/srv/www/wikido.xyz/";
 
 if ( defined( 'MW_DB' ) ) {
-	// Command-line mode and maintenance scripts (e.g. update.php) 
+	// Command-line mode and maintenance scripts (e.g. update.php)
 	$wikiname = substr(MW_DB, 0, -5);
 	require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 } else {
@@ -28,6 +28,14 @@ if ( defined( 'MW_DB' ) ) {
 	}
 	require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 }
+
+#=== Debugging ===
+//$wgShowExceptionDetails  = true;
+//$wgShowDBErrorBacktrace = true;
+//error_reporting(-1);
+//ini_set("display_error", 1);
+//$wgMainCacheType = CACHE_NONE;
+//$wgDisableOutputCompression = true;
 
 ## Global directives
 //$wgReadOnly = 'الويكي في طور الصيانة. يمكنكم القراءة لكن لا يمكنكم التأليف.';
