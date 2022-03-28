@@ -11,7 +11,7 @@ show_usage() {
 		relative to source and target, as roots.
 		Usage:
 			$(basename $0) [-f] -s SOURCE -t TARGET | -r TARGET
-		
+
 		Where:
 			-f	Force replacement of existing symlinks.
 			-r	Remove links and restore .upstream files to their original names.
@@ -67,7 +67,7 @@ if [ -z "$sRoot" -a -z "$tRoot" -a ! -z "$rRoot" ]; then
 		if [ -h $oFile ]; then
 			rm "$oFile"
 		fi
-		mv "$rFile" "$oFile" 
+		mv "$rFile" "$oFile"
 		echo "Restored ./${oFile#$rRoot}" >&2
 		let c=c+1
 	done
@@ -79,11 +79,11 @@ elif [ ! -z "$sRoot" -a ! -z "$tRoot" -a -z "$rRoot" ]; then
 	for sFile in $(find -H "$sRoot" -type f);
 	do
 		linkT=${sFile/#$sRoot/$tRoot}
-		if [ -f $linkT ]; then
+		if [[ -f $linkT || -h $linkT ]]; then
 			if ! mv --no-clobber "$linkT" "$linkT.upstream"; then
 				echo "Skipping $sFile: Target could not be backed up." >&2
 			else
-				if ln --symbolic ${FORCE_LINKS+--force} "$sFile" "$linkT"; then
+				if ln --symbolic --no-target-directory ${FORCE_LINKS+--force} "$sFile" "$linkT"; then
 					echo "Done ${FORCE_LINKS+forced} linking ./${linkT#$tRoot}" >&2
 					let c=c+1
 				fi
