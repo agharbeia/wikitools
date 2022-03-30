@@ -4,7 +4,7 @@ if [ -z $1 ]; then
 	echo "No name of a MW extension was specified. Exiting." >&2
 	exit 1
 fi
-	
+
 if [ "$(whoami)" != 'www-data' ]; then
 	echo "The script needs to be run as the webserver's user (assumed to be 'www-data'). Exiting." >&2
 	exit 1
@@ -22,30 +22,32 @@ if [[ ! -f $MW_BASE_DIR/RELEASE-NOTES-$MW_VER || ("$RN" != "= MediaWiki $MW_VER 
 else
 	WIKIDO_EXT_REPO=$(realpath "$MW_BASE_DIR/../extra/extensions")
 	echo "Extensions' repository directory is: $WIKIDO_EXT_REPO" >&2
-	echo "Working Extensions directory is: $MW_BASE_DIR/extensions" >&2
+	echo -e "Working Extensions directory is: $MW_BASE_DIR/extensions\n" >&2
 fi
 
 if [ ! -d "$MW_BASE_DIR/extensions/$1" ]; then
 	if [ ! -d "$WIKIDO_EXT_REPO/$1-REL${MW_VER/./_}-"* ];  then
-		echo "This extension does not exist in local repository. Downloading..." >&2
-		$(dirname "$0")/mw-get-extension.py --mw-version "$MW_VER" --target-dir "$WIKIDO_EXT_REPO" "$1"
+		echo "Downloading $1, since it didn't exist in local repository..." >&2
+		$(dirname "$0")/mw-get-extension.py --mw-version "$MW_VER" --target-dir "$WIKIDO_EXT_REPO" "$1" >&2
 		error_code=$?
-		if [ $error_code -ne 0 ]; then 
-			echo "Something wrong happened while downloading. Last error code was $error_code. Check the output above. Exiting." >&2
+		if [ $error_code -ne 0 ]; then
+			echo "Something wrong happened while downloading $1. Last error code was $error_code. Check the output above. Exiting." >&2
 			exit 1
+		else
+			echo "done."
 		fi
 	else
-		echo "This extension was already downloaded." >&2
+		echo "Skipping downloading $1. It already exists in the repository." >&2
 	fi
 
-	echo "Linking from the extensions' repository to the working extensions directory." >&2
-	ln --symbolic $(ls -d "$WIKIDO_EXT_REPO/$1-"*) "$MW_BASE_DIR/extensions/$1"
+	echo -n "$1 is being linked from the extensions' repository to the working extensions directory..." >&2
+	ln --symbolic --no-target-directory $(ls -d "$WIKIDO_EXT_REPO/$1-"*) "$MW_BASE_DIR/extensions/$1" && echo "done"
 else
 	if [ -h "$MW_BASE_DIR/extensions/$1" ]; then
-		echo "This extension was already downloaded and linked. Exiting." >&2
+		echo "Skipping $1, since it is already installed." >&2
 	else
-		echo "The extntion seems to have been bundled with MW $MW_VER. Exiting." >&2
+		echo "Skipping $1, since seems to have been bundled with MW $MW_VER." >&2
 	fi
 fi
 
-echo "Done." >&2
+echo "Completed." >&2
