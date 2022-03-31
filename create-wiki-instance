@@ -20,7 +20,7 @@ Cache_Root=/var/cache
 Temp_Root=/var/tmp
 Secrets_Dir=/srv/websecrets
 
-# Templates:
+# Template file names:
 DB_Template=wikido.xyz.mw-$MW_Ver.sql
 LocalSettings_Template=LocalSettings.template
 Apache_Template=apache.$Apex.conf.template
@@ -57,7 +57,7 @@ Wiki_Title=$2
 Wiki_Username=$3
 Wiki_Password=$4
 
-echo -e "Creating instance for:\nHandle: $Wiki_Handle\nTitle: $Wiki_Title\nMW version: $MW_Ver" >&2
+echo -e "Creating a Mediawiki instance for:\nHandle: $Wiki_Handle\nTitle: $Wiki_Title\nMW version: $MW_Ver" >&2
 
 
 # Derivative constants:
@@ -82,21 +82,14 @@ EOF"
 
 
 # Create directories and most needed symbolic links, acting as the Apache user
-sudo -u www-data mkdir --parents $WIKI_ROOT
-sudo -u www-data ln --symbolic $MW_Source $WIKI_ROOT/$MW_Instance_Dir
-sudo -u www-data cp --recursive $MW_Source/images $REPOSITORY_DIR
-sudo -u www-data cp --recursive $MW_Source/cache $CACHE_DIR
-sudo -u www-data mkdir --parents $TEMP_DIR
-mkdir --parents $Secrets_Dir && chgrp www-data $Secrets_Dir
-
-# Generate LocalSettings.php for the wiki instance
-# This instance-specific file is invoked from a dispatcher at the wikifamily-level
-conf_from_template "$Templates_Dir/$LocalSettings_Template" > "$WIKI_ROOT/LocalSettings.php"
-
-#Generate Apache configuration
-conf_from_template "$Templates_Dir/$Apache_Template" > "/etc/apache2/sites-available/$WIKI_FQDN.conf"
-
-sudo -u www-data cp "$Templates_Dir/$Robots_Template" "$WIKI_ROOT/robots.txt"
+echo -n "Setting directories up.."
+if [ ! -d $WIKI_ROOT ]; then sudo -u www-data mkdir --parents $WIKI_ROOT; fi
+sudo -u www-data ln --symbolic --force --no-target-directory $MW_Source $WIKI_ROOT/$MW_Instance_Dir
+sudo -u www-data cp --recursive --no-target-directory $MW_Source/images $REPOSITORY_DIR
+sudo -u www-data cp --recursive --no-target-directory $MW_Source/cache $CACHE_DIR
+if [ ! -d $TEMP_DIR ]; then sudo -u www-data mkdir --parents $TEMP_DIR; fi
+if [ ! -d $Secrets_Dir ]; then mkdir --parents $Secrets_Dir && chgrp www-data $Secrets_Dir; fi
+echo "done."
 
 #Generate websecrets files ##This is entropy-expensive, so better not run it unless it's feasible
 DB_PASSWORD=$(apg -a1 -n1 -m16 -MNCL -d)
@@ -105,22 +98,23 @@ conf_from_template "$Templates_Dir/$Secrets_Template" > "$Secrets_Dir/$Wiki_Hand
 chmod u=r,g=r,o=- "$Secrets_Dir/$Wiki_Handle.$Apex"
 
 #Create database
-echo "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';" | mysql --user=root --password && echo -e "Successfuly created database $DB_NAME; user $DB_USER, and granted permissions.\nDatabase user's password is $DB_PASSWORD." >&2
+#DEBUG#echo "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';" | mysql --user=root --password && echo -e "Successfuly created database $DB_NAME; user $DB_USER, and granted permissions.\nDatabase user's password is $DB_PASSWORD." >&2
 
-mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $Templates_Dir/$DB_Template && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
-
+#mysql --user=$DB_USER --password=$DB_PASSWORD $DB_NAME < $Templates_Dir/$DB_Template && echo "Successfuly created Mediawiki tables in $DB_NAME." >&2
 
 #create 1st wiki user
-sudo -u www-data php "$MW_Source/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$Wiki_Username" $Wiki_Password
+#sudo -u www-data php "$MW_Source/maintenance/createAndPromote.php" --bureaucrat --sysop --wiki "$DB_NAME" "$Wiki_Username" $Wiki_Password
 
-sudo -u www-data php "$MW_Source/maintenance/install.php
+# Generate LocalSettings.php for the wiki instance
+# This instance-specific file is invoked from a dispatcher at the wikifamily-level
+conf_from_template "$Templates_Dir/$LocalSettings_Template" > "$WIKI_ROOT/LocalSettings.php"
 
-#create logo
+echo "run:" "php $WIKI_ROOT/$MW_Instance_Dir/maintenance/install.php" --dbuser $DB_USER --dbpass $DB_PASSWORD --confpath /tmp/ --dbname $DB_NAME --installdbuser root --installdbpass \"\" --pass "$Wiki_Password" "$Wiki_Title" "$Wiki_Username"
+
+#create and inject logo
 HANDLE_HASH=$(echo -n $Wiki_Handle | md5sum)
-
 COLOUR1=${HANDLE_HASH:0:6}
 COLOUR2=$(for o in {0..4..2}; do printf '%02X' $(( (0x${HANDLE_HASH:o:2} + 0x80) % 0xFF )); done)
-
 if [[ 0x$COLOUR1 -lt 0x$COLOUR2 ]]; then
 	FILL1=#$COLOUR2
 	FILL2=#$COLOUR1
@@ -129,10 +123,11 @@ else
 	FILL2=#$COLOUR2
 fi
 conf_from_template "$Templates_Dir/$Logo_Template" > $WIKI_ROOT/logo.svg
-sudo -u www-data php $MW_Source/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
+#DEBUG#sudo -u www-data php $MW_Source/maintenance/importImages.php --wiki $DB_NAME --extensions=svg --skip-dupes --comment='شعار ويكي $WIKI_FQDN بألوان مستنبطة من عنوانها' --license='برخصة_المشاع_الإبداعي_النسبة_4.0' $WIKI_ROOT
 
+sudo -u www-data cp "$Templates_Dir/$Robots_Template" "$WIKI_ROOT/robots.txt"
 
-a2ensite $WIKI_FQDN.conf
-
+conf_from_template "$Templates_Dir/$Apache_Template" > "/etc/apache2/sites-available/$WIKI_FQDN.conf"
+#DEBUG#a2ensite $WIKI_FQDN.conf
 #restart apache if configuration is OK
-apache2ctl configtest && apache2ctl restart
+#DEBUG#apache2ctl configtest && apache2ctl restart
