@@ -3,18 +3,18 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	exit;
 } # Protect against web entry
 
-\$wgSitename = "$WIKI_TITLE";
+\$wgSitename = "$Wiki_Title";
 \$wgMetaNamespace = 'ويكي';
 
 
 #== Server ==
 \$wgServer = "https://$WIKI_FQDN";
-\$wgEmergencyContact = "webmaster@$APEX";
+\$wgEmergencyContact = "webmaster@$Apex";
 \$wgPasswordSender = "robot@$WIKI_FQDN";
-\$wgScriptPath = '/$MW_INSTANCE_DIR';
+\$wgScriptPath = '/$MW_Instance_Dir';
 \$wgResourceBasePath = \$wgScriptPath;
 
-\$wgLogo = '$URL_PREFIX/Special:Filepath/logo.svg';
+\$wgLogo = '$URL_Prefix/Special:Filepath/logo.svg';
 \$wgEnableEmail = true;
 
 #=== Locale and languages ===
@@ -41,9 +41,9 @@ require_once( '$SECRETS_DIR/$WIKI_FQDN' );
 #=== Action Paths ===
 \$actions = [ 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback', 'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info', 'raw', 'credits' ];
 foreach ( \$actions as \$action ) {
-  \$wgActionPaths[\$action] = "$URL_PREFIX/\$1/\$action";
+  \$wgActionPaths[\$action] = "$URL_Prefix/\$1/\$action";
 }
-\$wgActionPaths['view'] = "$URL_PREFIX/\$1";
+\$wgActionPaths['view'] = "$URL_Prefix/\$1";
 \$wgArticlePath = \$wgActionPaths['view'];
 \$wgUsePathInfo = true;
 
@@ -51,7 +51,7 @@ foreach ( \$actions as \$action ) {
 #== File uploads ==
 \$wgEnableUploads  = true;
 \$wgUploadDirectory = '$REPOSITORY_DIR';
-\$wgUploadPath	= '/$REPO_ALIAS';
+\$wgUploadPath	= '/$Repo_Alias';
 \$wgUseImageMagick = true;
 \$wgImageMagickConvertCommand = '/usr/bin/convert';
 \$wgAllowCopyUploads = true;

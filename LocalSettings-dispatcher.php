@@ -11,23 +11,31 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 $WebRoot = "/srv/www/wikido.xyz/";
 
 if ( defined( 'MW_DB' ) ) {
-    // Command-line mode and maintenance scripts (e.g. update.php) 
-    $wikiname = substr(MW_DB, 0, -5);
-    require_once ($WebRoot . $wikiname . "/LocalSettings.php");
+	// Command-line mode and maintenance scripts (e.g. update.php)
+	$wikiname = substr(MW_DB, 0, -5);
+	require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 } else {
-    // Assume it being a web request
+// Assume it being a web request
 	if ( array_key_exists('SERVER_NAME', $_SERVER) ) {
-	    $server = $_SERVER['SERVER_NAME'];
-	    if ( preg_match( '/^(.*)\.wikido.xyz$/', $server, $matches ) ) {
-    	    $wikiname = $matches[1];
-	    } else {
-    	    die( "We should not be here since Apache shouldn't have routed a request to $server to WikiDo." );
-    	}
+		$server = $_SERVER['SERVER_NAME'];
+		if ( preg_match( '/^(.*)\.wikido.xyz$/', $server, $matches ) ) {
+			$wikiname = $matches[1];
+		} else {
+			die( "We should not be here since Apache shouldn't have routed a request to $server to WikiDo." );
+		}
 	} else {
 		die("Couldn't guess which WikiDo member to work on.");
 	}
-    require_once ($WebRoot . $wikiname . "/LocalSettings.php");
+	require_once ($WebRoot . $wikiname . "/LocalSettings.php");
 }
+
+#=== Debugging ===
+//$wgShowExceptionDetails  = true;
+//$wgShowDBErrorBacktrace = true;
+//error_reporting(-1);
+//ini_set("display_error", 1);
+//$wgMainCacheType = CACHE_NONE;
+//$wgDisableOutputCompression = true;
 
 ## Global directives
 //$wgReadOnly = 'الويكي في طور الصيانة. يمكنكم القراءة لكن لا يمكنكم التأليف.';

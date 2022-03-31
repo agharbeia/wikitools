@@ -4,7 +4,7 @@ if [ -z $1 ]; then
 	echo "No name of a MW extension was specified. Exiting." >&2
 	exit 1
 fi
-	
+
 if [ "$(whoami)" != 'www-data' ]; then
 	echo "The script needs to be run as the webserver's user (assumed to be 'www-data'). Exiting." >&2
 	exit 1
@@ -37,6 +37,8 @@ if [ ! -d "$MW_BASE_DIR/extensions/$1" ]; then
 		if [ $error_code -ne 0 ]; then
 			echo "Something wrong happened while downloading $1. Last error code was $error_code. Check the output above. Exiting." >&2
 			exit 1
+		else
+			echo "done."
 		fi
 	else
 		echo "Skipping downloading $1. It already exists in the repository." >&2
